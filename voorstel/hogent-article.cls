@@ -241,7 +241,7 @@
 
 \setmainfont{Montserrat}      % Font selection
 \setmathfont{Fira Math}
-\setmonofont{Fira Code}
+\setmonofont{Fira Code Regular}
 
 %% -----------------------------------------------------------------------------
 %% Page setup

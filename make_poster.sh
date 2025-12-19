@@ -18,10 +18,10 @@ else
 fi
 
 # build the docker image with all tex dependencies
-${container_cmd} build --tag bpimg \
+"${container_cmd}" build --tag bpimg \
   --file docker/Dockerfile .
 
 # build the proposal
-${container_cmd} run --rm \
+"${container_cmd}" run --rm \
   --volume "$PWD":/bp"${mount_opts}" bpimg \
   sh /bp/docker/render_thesis.sh poster

@@ -1,84 +1,81 @@
 %---------- Inleiding ---------------------------------------------------------
-
-% TODO: Is dit voorstel gebaseerd op een paper van Research Methods die je
-% vorig jaar hebt ingediend? Heb je daarbij eventueel samengewerkt met een
-% andere student?
-% Zo ja, haal dan de tekst hieronder uit commentaar en pas aan.
-
-%\paragraph{Opmerking}
-
-% Dit voorstel is gebaseerd op het onderzoeksvoorstel dat werd geschreven in het
-% kader van het vak Research Methods dat ik (vorig/dit) academiejaar heb
-% uitgewerkt (met medesturent VOORNAAM NAAM als mede-auteur).
-% 
-
-\section{Inleiding}%
+\section{Inleiding}% 
 \label{sec:inleiding}
 
-Waarover zal je bachelorproef gaan? Introduceer het thema en zorg dat volgende zaken zeker duidelijk aanwezig zijn:
+Deze bachelorproef onderzoekt hoe een geautomatiseerd systeem voor security monitoring en incident response kan worden ontworpen om securitydata binnen SaaS-omgevingen effectief te centraliseren, analyseren en rapporteren in een DevOps-infrastructuur. 
 
+Het onderzoek vertrekt vanuit een concrete casus bij Devinity.eu, een SaaS-bedrijf dat momenteel meerdere tools gebruikt voor security monitoring en incidentdetectie. Hierdoor ontstaan problemen zoals vertraagde detectie, onvolledige rapporten en inconsistentie in incidentafhandeling. De doelgroep bestaat uit DevOps- en securityteams binnen SaaS-bedrijven, die baat hebben bij een gecentraliseerd en geautomatiseerd systeem dat de operationele efficiëntie verhoogt en risico’s beter beheersbaar maakt.
+
+De centrale onderzoeksvraag luidt: \textbf{Hoe kan een geautomatiseerd systeem voor security monitoring en incident response worden ontworpen om securitydata binnen SaaS-omgevingen effectief te centraliseren, analyseren en rapporteren in een DevOps-infrastructuur?}
+
+De doelstelling van deze bachelorproef is het ontwikkelen van een proof-of-concept van een gecentraliseerd systeem dat:
 \begin{itemize}
-  \item kaderen thema
-  \item de doelgroep
-  \item de probleemstelling en (centrale) onderzoeksvraag
-  \item de onderzoeksdoelstelling
+    \item Securitydata uit SaaS-applicaties (zoals Microsoft 365, Google Workspace, Okta) en DevOps-omgevingen verzamelt via API’s, webhooks en logforwarders;
+    \item Data normaliseert en analyseert om incidenten sneller en accurater te detecteren;
+    \item Automatische rapportages genereert voor technische teams en management;
+    \item KPI’s levert om de effectiviteit van monitoring en incident response te meten.
 \end{itemize}
 
-Denk er aan: een typische bachelorproef is \textit{toegepast onderzoek}, wat betekent dat je start vanuit een concrete probleemsituatie in bedrijfscontext, een \textbf{casus}. Het is belangrijk om je onderwerp goed af te bakenen: je gaat voor die \textit{ene specifieke probleemsituatie} op zoek naar een goede oplossing, op basis van de huidige kennis in het vakgebied.
+Het concrete eindresultaat is een werkend prototype dat de voordelen van centralisatie, snelle detectie en consistente rapportage aantoont. 
 
-De doelgroep moet ook concreet en duidelijk zijn, dus geen algemene of vaag gedefinieerde groepen zoals \emph{bedrijven}, \emph{developers}, \emph{Vlamingen}, enz. Je richt je in elk geval op it-professionals, een bachelorproef is geen populariserende tekst. Eén specifiek bedrijf (die te maken hebben met een concrete probleemsituatie) is dus beter dan \emph{bedrijven} in het algemeen.
-
-Formuleer duidelijk de onderzoeksvraag! De begeleiders lezen nog steeds te veel voorstellen waarin we geen onderzoeksvraag terugvinden.
-
-Schrijf ook iets over de doelstelling. Wat zie je als het concrete eindresultaat van je onderzoek, naast de uitgeschreven scriptie? Is het een proof-of-concept, een rapport met aanbevelingen, \ldots Met welk eindresultaat kan je je bachelorproef als een succes beschouwen?
-
-%---------- Stand van zaken ---------------------------------------------------
-
+%---------- Literatuurstudie ---------------------------------------------------
 \section{Literatuurstudie}%
 \label{sec:literatuurstudie}
 
-Hier beschrijf je de \emph{state-of-the-art} rondom je gekozen onderzoeksdomein, d.w.z.\ een inleidende, doorlopende tekst over het onderzoeksdomein van je bachelorproef. Je steunt daarbij heel sterk op de professionele \emph{vakliteratuur}, en niet zozeer op populariserende teksten voor een breed publiek. Wat is de huidige stand van zaken in dit domein, en wat zijn nog eventuele open vragen (die misschien de aanleiding waren tot je onderzoeksvraag!)?
+Deze literatuurstudie behandelt de state-of-the-art van security monitoring, incident response en data-analyse binnen SaaS-omgevingen en DevOps. Het doel is een theoretische basis te leggen voor het ontwerp van het proof-of-concept en de selectie van technologieën. 
 
-Je mag de titel van deze sectie ook aanpassen (literatuurstudie, stand van zaken, enz.). Zijn er al gelijkaardige onderzoeken gevoerd? Wat concluderen ze? Wat is het verschil met jouw onderzoek?
+\subsection{Security monitoring \& SIEM}
+Traditionele intrusion detection- en prevention-systemen (IDPS) vormen de basis van security monitoring. Volgens Scarfone \& Mell (2007) zijn detectie, correlatie van events en het beperken van false positives kernfuncties van IDPS-systemen \autocite{Scarfone2007}. Moderne SIEM-oplossingen zoals Elastic Security en OpenSearch Security combineren log ingestion, correlatie, dashboards en alerting in één platform. Deze systemen zijn goed toepasbaar binnen DevOps-omgevingen en vormen de basis voor geautomatiseerde monitoring.
 
-Verwijs bij elke introductie van een term of bewering over het domein naar de vakliteratuur, bijvoorbeeld~\autocite{Hykes2013}! Denk zeker goed na welke werken je refereert en waarom.
+\subsection{SaaS \& cloud logging}
+SaaS-omgevingen bieden logging- en securitymonitoring via API’s, webhooks en agents. De Cloud Security Alliance benadrukt het belang van gecentraliseerde logging en governance \autocite{CSA2019}. Microsoft 365 en Okta documenteren welke logs en events beschikbaar zijn en hoe deze kunnen worden verzameld. Dit toont aan dat centralisatie van securitydata uit SaaS-diensten praktisch haalbaar is.
 
-Draag zorg voor correcte literatuurverwijzingen! Een bronvermelding hoort thuis \emph{binnen} de zin waar je je op die bron baseert, dus niet er buiten! Maak meteen een verwijzing als je gebruik maakt van een bron. Doe dit dus \emph{niet} aan het einde van een lange paragraaf. Baseer nooit teveel aansluitende tekst op eenzelfde bron.
+\subsection{Correlatie, threat intelligence \& detectie}
+Het normaliseren van data en toevoegen van context is cruciaal voor effectieve detectie. Mavroeidis \& Bromander (2017) beschrijven taxonomieën en modellen voor cyber threat intelligence, wat helpt bij het structureren van alerts \autocite{Mavroeidis2017}. Het MITRE ATT\&CK Framework ondersteunt het definiëren van detectieregels en analyse van incidenten, waardoor een systematische aanpak mogelijk is.
 
-Als je informatie over bronnen verzamelt in JabRef, zorg er dan voor dat alle nodige info aanwezig is om de bron terug te vinden (zoals uitvoerig besproken in de lessen Research Methods).
-
-% Voor literatuurverwijzingen zijn er twee belangrijke commando's:
-% \autocite{KEY} => (Auteur, jaartal) Gebruik dit als de naam van de auteur
-%   geen onderdeel is van de zin.
-% \textcite{KEY} => Auteur (jaartal)  Gebruik dit als de auteursnaam wel een
-%   functie heeft in de zin (bv. ``Uit onderzoek door Doll & Hill (1954) bleek
-%   ...'')
-
-Je mag deze sectie nog verder onderverdelen in subsecties als dit de structuur van de tekst kan verduidelijken.
+\subsection{Metrics \& rapportering}
+Het meten van prestaties en effectiviteit is essentieel. NIST SP 800-55 \autocite{NIST80055} en Jaquith (2007) beschrijven KPI’s zoals Mean Time To Detect (MTTD), Mean Time To Respond (MTTR) en aantal false positives. Deze metrics zijn bruikbaar voor zowel technische teams als management om de effectiviteit van het systeem te evalueren.
 
 %---------- Methodologie ------------------------------------------------------
 \section{Methodologie}%
 \label{sec:methodologie}
 
-Hier beschrijf je hoe je van plan bent het onderzoek te voeren. Welke onderzoekstechniek ga je toepassen om elk van je onderzoeksvragen te beantwoorden? Gebruik je hiervoor literatuurstudie, interviews met belanghebbenden (bv.~voor requirements-analyse), experimenten, simulaties, vergelijkende studie, risico-analyse, PoC, \ldots?
+Het onderzoek wordt uitgevoerd in vier fasen:
 
-Valt je onderwerp onder één van de typische soorten bachelorproeven die besproken zijn in de lessen Research Methods (bv.\ vergelijkende studie of risico-analyse)? Zorg er dan ook voor dat we duidelijk de verschillende stappen terug vinden die we verwachten in dit soort onderzoek!
+\begin{enumerate}
+    \item \textbf{Probleemanalyse:} Samenwerking met Devinity.eu om huidige monitoringtools, workflows en tekortkomingen in kaart te brengen. Analyse van bestaande logs, incidenten en KPI’s.
+    \item \textbf{Architectuurontwerp:} Selectie van technologieën zoals Elastic Stack, Wazuh en OpenSearch voor het verzamelen, normaliseren en analyseren van data. Definiëren van datastromen via API’s, webhooks en logforwarders.
+    \item \textbf{Proof-of-concept ontwikkeling:} Implementatie van centrale logging, correlatie- en analysemethoden (rule-based en eenvoudige machine learning), en automatische rapportage. Testen binnen een DevOps-pipeline.
+    \item \textbf{Evaluatie en KPI-meting:} Meten van detectiesnelheid, aantal false positives, responstijd en percentage automatisch afgehandelde incidenten. Analyse van resultaten en aanbevelingen voor optimalisatie.
+\end{enumerate}
 
-Vermijd onderzoekstechnieken die geen objectieve, meetbare resultaten kunnen opleveren. Enquêtes, bijvoorbeeld, zijn voor een bachelorproef informatica meestal \textbf{niet geschikt}. De antwoorden zijn eerder meningen dan feiten en in de praktijk blijkt het ook bijzonder moeilijk om voldoende respondenten te vinden. Studenten die een enquête willen voeren, hebben meestal ook geen goede definitie van de populatie, waardoor ook niet kan aangetoond worden dat eventuele resultaten representatief zijn.
+\textbf{Tijdsplanning:}
+\begin{itemize}
+    \item Fase 1: 3 weken – requirements-analyse en dataverzameling.
+    \item Fase 2: 2 weken – architectuurontwerp en selectie van tools.
+    \item Fase 3: 6 weken – implementatie van proof-of-concept.
+    \item Fase 4: 2 weken – evaluatie, metingen en rapportering.
+\end{itemize}
 
-Uit dit onderdeel moet duidelijk naar voor komen dat je bachelorproef ook technisch voldoen\-de diepgang zal bevatten. Het zou niet kloppen als een bachelorproef informatica ook door bv.\ een student marketing zou kunnen uitgevoerd worden.
-
-Je beschrijft ook al welke tools (hardware, software, diensten, \ldots) je denkt hiervoor te gebruiken of te ontwikkelen.
-
-Probeer ook een tijdschatting te maken. Hoe lang zal je met elke fase van je onderzoek bezig zijn en wat zijn de concrete \emph{deliverables} in elke fase?
+De deliverables per fase zijn:
+\begin{itemize}
+    \item Fase 1: Analyseverslag van huidige situatie en probleemstelling.
+    \item Fase 2: Ontwerpspecificatie van de architectuur en datastromen.
+    \item Fase 3: Werkend proof-of-concept systeem.
+    \item Fase 4: Evaluatierapport met KPI’s, conclusies en aanbevelingen.
+\end{itemize}
 
 %---------- Verwachte resultaten ----------------------------------------------
 \section{Verwacht resultaat, conclusie}%
 \label{sec:verwachte_resultaten}
 
-Hier beschrijf je welke resultaten je verwacht. Als je metingen en simulaties uitvoert, kan je hier al mock-ups maken van de grafieken samen met de verwachte conclusies. Benoem zeker al je assen en de onderdelen van de grafiek die je gaat gebruiken. Dit zorgt ervoor dat je concreet weet welk soort data je moet verzamelen en hoe je die moet meten.
+Het verwachte resultaat is een proof-of-concept van een gecentraliseerd securitymonitoringsysteem dat:
 
-Wat heeft de doelgroep van je onderzoek aan het resultaat? Op welke manier zorgt jouw bachelorproef voor een meerwaarde?
+\begin{itemize}
+    \item Securitydata uit meerdere SaaS- en DevOps-bronnen centraliseert en normaliseert;
+    \item Incidenten sneller en betrouwbaarder detecteert via correlatie en analyse;
+    \item Automatische rapportages genereert voor technische teams en management;
+    \item KPI’s levert zoals MTTD, MTTR, aantal false positives en responstijd.
+\end{itemize}
 
-Hier beschrijf je wat je verwacht uit je onderzoek, met de motivatie waarom. Het is \textbf{niet} erg indien uit je onderzoek andere resultaten en conclusies vloeien dan dat je hier beschrijft: het is dan juist interessant om te onderzoeken waarom jouw hypothesen niet overeenkomen met de resultaten.
-
+De meerwaarde voor de doelgroep (DevOps- en securityteams bij SaaS-bedrijven) ligt in hogere operationele efficiëntie, betere risico-inschatting en snellere incidentafhandeling. Het onderzoek levert zowel praktische inzichten als een concrete demonstratie van een geautomatiseerd monitoring- en incident response-systeem.

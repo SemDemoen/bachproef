@@ -24,3 +24,14 @@
 - Perfect bruikbaar voor theoretische onderbouwing van security monitoring.  
 - Geschikt om concepten zoals logbeheer, intrusion detection en netwerksegmentatie te ondersteunen.
 
+
+## Computer Security Incident Handling Guide
+
+### Belangrijkste inzichten
+- Zeer compleet en praktisch document voor **incident handling**.  
+- Duidelijke definities, fases en rollen binnen incident response.  
+- Sterke beschrijvingen van procedures, workflows en best practices.
+
+### Opmerkingen / annotaties
+- Meest bruikbare bron voor de bachelorproef.  
+- Perfect als theoretische én praktische onderbouwing voor incident response.
