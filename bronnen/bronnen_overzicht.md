@@ -1,7 +1,7 @@
 # Bronnen – overzicht
 
 ## NIST framework
-**Bron:** NIST (2018). *Framework for Improving Critical Infrastructure Cybersecurity (v1.1)*
+**Bron:** National Institute of Standards and Technology. (2018). Framework for Improving Critical Infrastructure Cybersecurity (Version 1.1). Gaithersburg, MD: NIST.
 
 ### Belangrijkste inzichten
 - Vijf kernfuncties: **Identify, Protect, Detect, Respond, Recover**  
@@ -14,6 +14,7 @@
 
 
 ## Infrastructure Security Architecture for Effective Security Monitoring
+**Bron:** Obregon, L. (2015). Infrastructure Security Architecture for Effective Security Monitoring (White Paper). SANS Institute. Geraadpleegd van https://www.sans.org/white-papers/36512
 
 ### Belangrijkste inzichten
 - Zeer informatief en duidelijk uitgelegd, ideaal voor literatuur en definities.  
@@ -26,6 +27,8 @@
 
 
 ## Computer Security Incident Handling Guide
+**Bron:** Cichonski, P., Millar, T., Grance, T., & Scarfone, K. (2012). Computer Security Incident Handling Guide (NIST Special Publication 800-61 Rev. 2). National Institute of Standards and Technology. https://doi.org/10.6028/NIST.SP.800-61r2
+
 
 ### Belangrijkste inzichten
 - Zeer compleet en praktisch document voor **incident handling**.  
