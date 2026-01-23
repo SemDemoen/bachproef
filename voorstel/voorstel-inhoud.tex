@@ -1,11 +1,17 @@
 %---------- Inleiding ---------------------------------------------------------
-\section{Inleiding}% 
+\section{Inleiding}%
 \label{sec:inleiding}
-Deze bachelorproef onderzoekt hoe een geautomatiseerd systeem voor security monitoring en incident response kan worden ontworpen om securitydata binnen SaaS-omgevingen effectief te centraliseren, analyseren en rapporteren in een DevOps-infrastructuur. 
-Het onderzoek vertrekt vanuit een casus bij Devinity.eu, een SaaS-bedrijf dat momenteel meerdere tools gebruikt voor security monitoring en incidentdetectie. Dit leidt tot problemen zoals vertraagde detectie, onvolledige rapporten en inconsistentie in incidentafhandeling. De doelgroep bestaat uit DevOps- en securityteams binnen SaaS-bedrijven, die baat hebben bij een gecentraliseerd en geautomatiseerd systeem dat de operationele efficiëntie verhoogt en risico’s beter beheersbaar maakt.
+Deze bachelorproef onderzoekt hoe een geautomatiseerd systeem voor security monitoring en incident response kan worden ontworpen om securitydata binnen SaaS-omgevingen effectief te 
+centraliseren, analyseren en rapporteren in een DevOps-infrastructuur. Het onderzoek vertrekt vanuit een casus bij Devinity.eu, een SaaS-bedrijf dat momenteel meerdere tools gebruikt voor 
+security monitoring en incidentdetectie. Dit leidt tot problemen zoals vertraagde detectie, onvolledige rapporten en inconsistentie in incidentafhandeling. De doelgroep bestaat uit 
+DevOps- en securityteams binnen SaaS-bedrijven, die baat hebben bij een gecentraliseerd en geautomatiseerd systeem dat de operationele efficiëntie verhoogt en risico’s beter beheersbaar maakt. 
+
+Binnen de scope van dit onderzoek wordt gefocust op één representatief SaaS-platform en één DevOps-pipeline om de haalbaarheid en diepgang van het proof-of-concept te waarborgen. 
+Bovendien benadrukken Gruhn \& Köhntopp (2021) dat security in DevOps-omgevingen een geïntegreerde aanpak vereist, waarbij monitoring en incident response nauw verweven zijn met de 
+ontwikkeling- en deploymentprocessen, om snelle detectie en respons op beveiligingsincidenten te kunnen garanderen \autocite{Gruhn_2021}.
 
 \textbf{Centrale onderzoeksvraag:}  
-\textit{Hoe kan een geautomatiseerd systeem voor security monitoring en incident response worden ontworpen om securitydata binnen SaaS-omgevingen effectief te centraliseren, analyseren en rapporteren in een DevOps-infrastructuur?}
+\textit{Hoe kan een geautomatiseerd systeem voor security monitoring en incident response worden ontworpen om securitydata binnen een SaaS-platform effectief te centraliseren, analyseren en rapporteren binnen een DevOps-pipeline?}
 
 \textbf{Deelonderzoeksvragen}
 
@@ -21,8 +27,8 @@ Het onderzoek vertrekt vanuit een casus bij Devinity.eu, een SaaS-bedrijf dat mo
 \emph{Oplossingsgericht:}
 \begin{enumerate}
     \item Welke architectuur en technologieën zijn het meest geschikt om een geautomatiseerd securitymonitoringsysteem te ontwikkelen dat past binnen een DevOps-omgeving (bijv. Elastic Stack, Wazuh, OpenSearch)?
-    \item Hoe kunnen correlatie- en analysemethoden (zoals machine learning of rule-based detection) bijdragen aan snellere en accuratere incidentdetectie?
-    \item Welke data-integratieprocessen (APIs, agents, pipelines) zijn het meest efficiënt om logs en securitydata uit verschillende bronnen te verzamelen en te normaliseren?
+    \item Hoe kan eenvoudige anomaly-detectie op SaaS login-auditlogs, als aanvulling op rule-based detectieregels, bijdragen aan het identificeren van ongebruikelijke authenticatiepogingen?
+    \item Welke data-integratieprocessen (APIs, agents, pipelines) zijn het meest efficiënt om logs en securitydata uit het geselecteerde SaaS-platform en de DevOps-pipeline te verzamelen en te normaliseren?
     \item Hoe kan automatische rapportgeneratie worden geïmplementeerd zodat rapporten zowel technische details als managementinzichten bevatten?
     \item Welke prestatie-indicatoren (KPIs) kunnen gebruikt worden om het succes van het systeem te meten, zoals detectiesnelheid, foutpositieven of responstijd?
     \item Hoe kan de beveiliging en betrouwbaarheid van het geautomatiseerde systeem zelf worden gegarandeerd binnen de bestaande DevOps-pipeline?
@@ -31,10 +37,10 @@ Het onderzoek vertrekt vanuit een casus bij Devinity.eu, een SaaS-bedrijf dat mo
 \textbf{Doelstelling:}  
 Het ontwikkelen van een proof-of-concept van een gecentraliseerd systeem dat:
 \begin{itemize}
-    \item Securitydata uit SaaS-applicaties en DevOps-omgevingen verzamelt via APIs, webhooks en logforwarders;
+    \item Securitydata uit het geselecteerde SaaS-platform en de DevOps-pipeline verzamelt via APIs, webhooks en logforwarders;
     \item Data normaliseert en analyseert om incidenten sneller en accurater te detecteren;
     \item Automatische rapportages genereert voor technische teams en management;
-    \item KPIs levert om de effectiviteit van monitoring en incident response te meten.
+    \item KPI’s levert om de effectiviteit van monitoring en incident response te meten.
 \end{itemize}
 
 Het concrete eindresultaat is een werkend prototype dat de voordelen van centralisatie, snelle detectie en consistente rapportage aantoont.
@@ -43,40 +49,45 @@ Het concrete eindresultaat is een werkend prototype dat de voordelen van central
 \section{Literatuurstudie}%
 \label{sec:literatuurstudie}
 De toenemende nood van bedrijven voor complexe netwerkinfrastructuren en cloudgebaseerde diensten heeft geleid tot een sterke groei in het aantal beveiligingstools en monitoringoplossingen.
-Ondanks deze evolutie blijkt het voor veel organisaties moeilijk om een doordachte en effectieve architectuur voor security monitoring te ontwerpen en te implementeren.
-Volgens \textcite{Obregon_2015} resulteert een minder goed ontworpen architectuur vaak in verlies van zichtbaarheid op netwerkverkeer en beveiligingsevents en verhoogde kosten voor bijkomende hardware en technologie.
-Dit probleem wordt samengevat door de stelling dat preventie ideaal is, maar detectie noodzakelijk blijft: zonder voldoende detectiemechanismen blijven incidenten onopgemerkt, ongeacht de ingezette preventieve maatregelen \autocite{Obregon_2015}.
+Ondanks deze evolutie blijkt het voor veel organisaties moeilijk om een doordachte en effectieve architectuur voor security monitoring te ontwerpen en te implementeren \autocite{Obregon_2015}.
+Dit probleem wordt samengevat door de stelling dat preventie ideaal is, maar detectie noodzakelijk blijft: zonder voldoende detectiemechanismen blijven incidenten onopgemerkt, 
+ongeacht de ingezette preventieve maatregelen \autocite{Obregon_2015}.
 
-Een fundamenteel punt binnen security monitoring is zichtbaarheid. Zoals vaak gesteld wordt: men kan niet beschermen wat men niet kan zien. Om deze zichtbaarheid te vergroten,
-is netwerksegmentatie heel erg belangerijk binnen een informatiebeveiligingsstrategie. Door het netwerk op te delen in duidelijk afgebakende zones wordt niet alleen de kans verkleind dat een succesvolle aanval zich kan verspreiden,
-maar wordt ook de analyse van netwerkverkeer vereenvoudigd en gerichter \autocite{Obregon_2015}.
-Netwerksegmentatie vormt daarmee de basis voor een veilige netwerkarchitectuur en ondersteunt zowel detectie als respons.
+Een fundamenteel punt binnen security monitoring is zichtbaarheid: men kan niet beschermen wat men niet kan zien. Om deze zichtbaarheid te vergroten, is netwerksegmentatie belangrijk
+binnen een informatiebeveiligingsstrategie. Door het netwerk op te delen in duidelijk afgebakende zones wordt niet alleen de kans verkleind dat een succesvolle aanval zich kan verspreiden, 
+maar wordt ook de analyse van netwerkverkeer vereenvoudigd en gerichter \autocite{Obregon_2015}. Netwerksegmentatie vormt daarmee de basis voor een veilige netwerkarchitectuur en ondersteuntzowel detectie als respons.
 
-Een tweede cruciaal punt van security monitoring is logbeheer. Het \textcite{NIST_CSF_2018} benadrukt dat logging en monitoring onmisbaar zijn binnen de functies \emph{Detect} en \emph{Respond}.
-Een log kan worden gedefinieerd als een registratie van gebeurtenissen binnen een computersysteem of netwerk, waarbij deze gebeurtenissen lokaal worden opgeslagen of doorgestuurd naar een gecentraliseerde
-logmanagementinfrastructuur voor verdere analyse \autocite{NIST_CSF_2018}. Logs bieden inzicht in wat er zich binnen een organisatie afspeelt en vormen een belangerijke informatiebron voor probleemoplossing,
-onderzoek en het ondersteunen van doelstellingen. Logmanagement omvat het volledige proces van het genereren, verzamelen, transporteren, opslaan, analyseren en uiteindelijk verwijderen van loggegevens afkomstig uit diverse bronnen \autocite{NIST_CSF_2018}.
-Door deze processen te structureren en te centraliseren kunnen organisaties beter omgaan met grote hoeveelheden data.
+Een tweede cruciaal punt van security monitoring is logbeheer. Logging en monitoring zijn onmisbaar binnen de functies \emph{Detect} en \emph{Respond} \autocite{NIST_CSF_2018}.
+Logs bieden inzicht in wat er zich binnen een organisatie afspeelt en vormen een belangrijke informatiebron voor probleemoplossing en onderzoek. Logmanagement omvat het volledige proces van genereren,
+verzamelen, transporteren, opslaan, analyseren en uiteindelijk verwijderen van loggegevens uit diverse bronnen \autocite{NIST_CSF_2018}. Door deze processen te structureren en
+te centraliseren kunnen organisaties beter omgaan met grote hoeveelheden data.
 
-Hoewel logging en monitoring onmisbaar zijn, blijft incidentdetectie één van de meest uitdagende aspecten van incident response. Incident handlers worden geconfronteerd met onvolledige,
-tegenstrijdige en verwarrende signalen die geanalyseerd moeten worden om vast te stellen of er daadwerkelijk sprake is van een beveiligingsincident \autocite{NIST_SP800_61}.
-Dit wordt nog meer ingewikkeld door het feit dat detectiemechanismen zoals intrusion detection systems vaak false positives genereren. Daarnaast zijn gebruikersmeldingen, zoals klachten over onbereikbare servers, niet altijd correct of volledig.
-Hierdoor is het noodzakelijk om elk signaal kritisch te bekijken voor je begint conclusies te trekken.
+Incidentdetectie blijft echter een uitdagend aspect van incident response. Incident handlers worden geconfronteerd met onvolledige, tegenstrijdige en verwarrende signalen die 
+geanalyseerd moeten worden om vast te stellen of er daadwerkelijk sprake is van een beveiligingsincident \autocite{NIST_SP800_61}. Detectiemechanismen zoals intrusion detection 
+systems genereren vaak false positives, en gebruikersmeldingen zijn niet altijd volledig of correct. Het is noodzakelijk elk signaal kritisch te beoordelen voor conclusies worden getrokken.
 
-De schaal van dit probleem is heel erg groot. Organisaties ontvangen een heel groot aantal indicatoren per dag, afkomstig van detectiesystemen, antivirussoftware en loganalyseplatformen \autocite{NIST_SP800_61}.
-Het onderscheiden van echte security-incidenten van onschuldige gebeurtenissen is niet gemakkelijk. Zelfs wanneer een indicator correct is, betekent dit niet automatisch dat er sprake is van een incident,
-aangezien veel symptomen ook veroorzaakt kunnen worden door menselijke fouten of technische storingen.
-Binnen incident response wordt een onderscheid gemaakt tussen \emph{precursors} en \emph{indicators}. 
-Precursors zijn signalen die wijzen op een mogelijke toekomstige aanval, zoals het detecteren van een kwetsbaarheidsscan in webserverlogs of een publieke aankondiging van een nieuwe exploit \autocite{NIST_SP800_61}.
-Hoewel precursors relatief zeldzaam zijn, kunnen ze organisaties in staat stellen hun beveiligingshouding proactief aan te passen. 
-Indicators daarentegen zijn signalen dat een incident mogelijk al heeft plaatsgevonden of gaande is, zoals malwaredetecties,
-mislukte inlogpogingen of afwijkende netwerkstromen. Deze indicatoren komen veel vaker voor en vormen de kern van operationele security monitoring.
+Scarfone & Mell beschrijven intrusion detection en prevention systemen als systemen die continu events monitoren en analyseren om mogelijke beveiligingsincidenten te detecteren
+en relevante informatie te loggen ten behoeve van verdere analyse en incident response \autocite{Scarfone_Mell_2007}.
 
-Tot slot definieert \textcite{NIST_SP800_61} een computer security incident als een daadwerkelijke of dreigende schending van beveiligingsbeleid of gangbare beveiligingspraktijken.
-Voorbeelden hiervan zijn datalekken, malware-infecties, denial-of-service-aanvallen en ongeautoriseerde toegang tot gevoelige gegevens.
-De noodzaak van een gestructureerde incident response-capaciteit komt voort uit de frequente en impactvolle aard van dergelijke incidenten. 
-Een systematische aanpak van incident response helpt organisaties om schade te beperken, dienstverlening te herstellen en lessen te trekken die bijdragen aan een betere voorbereiding op toekomstige incidenten.
+In dit kader spelen SIEM-systemen een centrale rol. SIEM-systemen worden gebruikt om data uit diverse bronnen te verzamelen, te normaliseren en te correleren zodat bedreigingen 
+sneller kunnen worden gedetecteerd en erop kan worden gereageerd \autocite{Gonzalez-Granadillo_2021}. Door logs, alerts en events uit verschillende SaaS- en DevOps-bronnen centraal 
+te aggregeren, kan een SIEM de snelheid en accuratesse van detectie verbeteren en consistente rapportages genereren voor technische teams en management. Bovendien benadrukt de literatuur 
+dat SIEM-systemen, hoewel krachtig, beperkingen hebben zoals complexe configuratie en uitdagingen bij anomaly-detectie, wat de keuze voor een gefaseerde en haalbare implementatie binnen 
+deze bachelorproef ondersteunt \autocite{Gonzalez-Granadillo_2021}.
+ 
+Het SANS Incident Handler’s Handbook van Kral (2011) beschrijft hoe incident response praktisch wordt uitgevoerd, inclusief het verzamelen, analyseren en correleren van security events, het loggen van relevante informatie, en het opvolgen van incidenten \autocite{Kral_2011}. 
+Dit raamwerk ondersteunt de opzet van dit onderzoek.
 
+Binnen incident response wordt een onderscheid gemaakt tussen \emph{precursors} en \emph{indicators}. Precursors zijn signalen van mogelijke toekomstige aanvallen, zoals kwetsbaarheidsscans 
+of exploit-aankondigingen. Indicators zijn signalen dat een incident mogelijk al heeft plaatsgevonden, zoals malwaredetecties of mislukte inlogpogingen. Indicatoren vormen de kern 
+van operationele security monitoring \autocite{NIST_SP800_61}.
+
+Tot slot definieert \textcite{NIST_SP800_61} een computer security incident als een daadwerkelijke of dreigende schending van beveiligingsbeleid of gangbare beveiligingspraktijken. 
+Voorbeelden zijn datalekken, malware-infecties, denial-of-service-aanvallen en ongeautoriseerde toegang tot gevoelige gegevens. Een gestructureerde incident response-capaciteit helpt organisaties 
+schade te beperken, dienstverlening te herstellen en lessen te trekken voor toekomstige incidenten.
+
+Prates \& Pereira (2024) geven aan dat security in DevOps niet apart kan staan, maar direct ingebouwd moet worden in het ontwikkel- en uitrolproces. Dit ondersteunt 
+de keuze om in dit onderzoek een proof-of-concept te maken dat security monitoring en incident response automatiseert voor één SaaS-platform en één DevOps-pipeline \autocite{Prates_2024}.
 
 %---------- Methodologie ------------------------------------------------------
 \section{Methodologie}%
@@ -85,9 +96,25 @@ Het onderzoek wordt uitgevoerd in vier fasen:
 \begin{enumerate}
     \item \textbf{Probleemanalyse:} Samenwerking met Devinity.eu om huidige monitoringtools, workflows en tekortkomingen in kaart te brengen. Analyse van bestaande logs, incidenten en KPI’s.
     \item \textbf{Architectuurontwerp:} Selectie van technologieën zoals Elastic Stack, Wazuh en OpenSearch voor het verzamelen, normaliseren en analyseren van data. Definiëren van datastromen via API’s, webhooks en logforwarders.
-    \item \textbf{Proof-of-concept ontwikkeling:} Implementatie van centrale logging, correlatie- en analysemethoden (rule-based en eenvoudige machine learning), en automatische rapportage. Testen binnen een DevOps-pipeline.
+    \item \textbf{Proof-of-concept ontwikkeling:} Implementatie van centrale logging, correlatie- en analysemethoden, hoofdzakelijk rule-based, aangevuld met optionele en eenvoudige anomaly-detectiemechanismen. Automatische rapportage wordt geïmplementeerd en getest binnen de geselecteerde DevOps-pipeline.
     \item \textbf{Evaluatie en KPI-meting:} Meten van detectiesnelheid, aantal false positives, responstijd en percentage automatisch afgehandelde incidenten. Analyse van resultaten en aanbevelingen voor optimalisatie.
 \end{enumerate}
+
+Voor de evaluatie van het proof-of-concept wordt gebruikgemaakt van gesimuleerde testdata en beperkte, niet-gevoelige logdata uit test- of stagingomgevingen. 
+Deze testdata bestaat uit authenticatielogs, auditlogs en API-events van het geselecteerde SaaS-platform en de DevOps-pipeline, aangevuld met doelbewust gegenereerde 
+security-events zoals mislukte loginpogingen en eenvoudige configuratiefouten. Zo kunnen realistische scenario’s worden getest zonder productie-incidenten.
+
+De prestaties van het proof-of-concept worden vergeleken met een baseline waarin dezelfde events enkel via standaard logging- en alertmechanismen beschikbaar zijn. 
+De vergelijking focust op de mate waarin het PoC events centraliseert, sneller detecteert en duidelijkere rapportering oplevert.
+
+De KPI’s worden gemeten met eenvoudig reproduceerbare methoden: detectiesnelheid als tijd tussen event en alert, aantal false positives als percentage van gegenereerde 
+alerts zonder corresponderend test-event, responstijd als tijd tussen alert en initiële actie, en percentage automatisch afgehandelde incidenten als aandeel events met vooraf ingestelde acties.
+
+Deze aanpak bouwt voort op de NIST‑aanbevelingen voor intrusion detection en prevention systemen, waarin het vastleggen, analyseren en correleren van security events 
+centraal staat voor effectieve detectie en respons \autocite{Scarfone_Mell_2007}. Tegelijkertijd baseert de architectuurkeuze zich op kerncomponenten van SIEM-systemen, 
+zoals gecentraliseerde logverzameling, normalisatie, rule engines en event monitoring \autocite{Gonzalez-Granadillo_2021}.
+Het proof-of-concept is echter geen volledig commercieel SIEM-systeem. In plaats daarvan betreft het een lichtgewicht, modulair systeem dat de belangrijkste principes 
+van centralisatie en incidentdetectie toepast binnen een specifieke DevOps- en SaaS-context.
 
 \textbf{Tijdsplanning:}
 \begin{itemize}
@@ -97,24 +124,29 @@ Het onderzoek wordt uitgevoerd in vier fasen:
     \item Fase 4: 2 weken - evaluatie, metingen en rapportering.
 \end{itemize}
 
-De deliverables per fase zijn:
+Deliverables per fase:
 \begin{itemize}
     \item Fase 1: Analyseverslag van huidige situatie en probleemstelling.
     \item Fase 2: Ontwerpspecificatie van de architectuur en datastromen.
     \item Fase 3: Werkend proof-of-concept systeem.
-    \item Fase 4: Evaluatierapport met KPIs, conclusies en aanbevelingen.
+    \item Fase 4: Evaluatierapport met KPI’s, conclusies en aanbevelingen.
 \end{itemize}
 
 %---------- Verwachte resultaten ----------------------------------------------
 \section{Verwacht resultaat, conclusie}%
 \label{sec:verwachte_resultaten}
 Het verwachte resultaat is een proof-of-concept van een gecentraliseerd securitymonitoringsysteem dat:
+
 \begin{itemize}
-    \item Securitydata uit meerdere SaaS- en DevOps-bronnen centraliseert en normaliseert;
-    \item Incidenten sneller en betrouwbaarder detecteert via correlatie en analyse;
+    \item Securitydata van het geselecteerde SaaS-platform en de DevOps-pipeline centraliseert en normaliseert;
+    \item Incidenten sneller en betrouwbaarder detecteert via correlatie en rule-based analyse;
     \item Automatische rapportages genereert voor technische teams en management;
     \item KPI’s levert zoals MTTD, MTTR, aantal false positives en responstijd.
 \end{itemize}
-De meerwaarde voor de doelgroep (DevOps- en securityteams bij SaaS-bedrijven) ligt in hogere operationele efficiëntie,
-betere risico-inschatting en snellere incidentafhandeling. Het onderzoek levert zowel praktische inzichten als een concrete 
-demonstratie van een geautomatiseerd monitoring- en incident response-systeem.
+
+Eenvoudige anomaly-detectie wordt optioneel onderzocht, als aanvulling op rule-based detectieregels. 
+Uitgebreide ML-methoden vallen buiten de scope van deze bachelorproef en worden enkel kwalitatief besproken indien toegepast.
+
+De meerwaarde voor de doelgroep ligt in hogere operationele efficiëntie, betere risico-inschatting en snellere incidentafhandeling. 
+Het onderzoek levert praktische inzichten en een concrete demonstratie van een geautomatiseerd monitoring- en incident response-systeem dat 
+haalbaar is binnen de beschikbare tijd en middelen, dankzij de beperkte en realistische scope.
