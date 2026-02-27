@@ -49,18 +49,22 @@
 %  \caption[Voorbeeld tabel]{\label{tab:example}Voorbeeld van een tabel.}
 %\end{table}
 
+% TODO: Gruhn, V., & Köhntopp, M. (2021). BRON UIT VOORSTEL ONLINE VINDEN?
+
 %========================================
 % 1. Context en Probleemkader
 %========================================
 
 De laatste jaren is er een enorme groei in de nood voor complexe netwerkinfrastructuren en cloudgebaseerde diensten binnen bedrijven in de IT-sector. Dit heeft geleid tot een aanzienlijke toename in het aantal beveiligingstools en monitoringoplossingen~\autocite{PersistenceITInfra2025}. Ondanks deze evolutie blijkt het voor heel wat organisaties nog steeds moeilijk om een doordachte en doeltreffende architectuur voor security monitoring te ontwerpen en te implementeren~\autocite{Obregon_2015}. De gevolgen van deze eerder moeizame implementatie uiten zich onder meer in dataverlies door onvoldoende zichtbaarheid op security-events en netwerkverkeer, verhoogde kost in nieuwe technologieën en nood aan extra personeel om het overweldigend aantal alerts te verwerken~\autocite{Obregon_2015}. 
 
-%TODO Complexiteit en fragmentatie van security-architecturen
+% Complexiteit en fragmentatie van security-architecturen
+% Netwerksegmentatie als architecturaal beveiligingsprincipe
+Het decentraliseren van de virtuele architectuur binnen een onderneming biedt voordelen, zoals verhoogde schaalbaarheid, flexibiliteit en wendbaarheid. Netwerksegmentatie speelt dan ook zeker een belangrijke rol binnen een informatiebeveiligingsstrategie: door het netwerk op te delen in verschillende zones neemt de kans dat een succesvolle aanval zich verspreidt aanzienlijk af, terwijl de zichtbaarheid van het netwerk tegelijkertijd wordt vergroot, \textit{je kan namelijk niet beschermen wat je niet kan zien}~\autocite{Obregon_2015}. Echter brengt het opsplitsen van een dergelijk netwerk ook een aanzienlijke problemen met zich mee, met name de verhoogde complexiteit bij het beveiligen van de systemen~\autocite{billawa2022sok}. Het monitoren van elk afzonderlijk systeem binnen een netwerk is doorgaans ook niet haalbaar vanuit een financieel perspectief en kan bovendien leiden tot een verkeerd gevoel van beveiligingszekerheid binnen de organisatie~\autocite{Obegron_2015}. Daarom is het van cruciaal belang om op een doordachte manier om te gaan met deze recente fragmentatie.
 
-%TODO Spanningsveld tussen preventie en detectie
-%TODO Belang van zichtbaarheid binnen cybersecurity
-"prevention is ideal, but detection is a must" (Dr.\ Eric Cole, geciteerd in Obregon, 2015)~\autocite{Obregon2015}.
-%TODO Netwerksegmentatie als architecturaal beveiligingsprincipe
+% Spanningsveld tussen preventie en detectie
+"prevention is ideal, but detection is a must" (Dr.\ Eric Cole, geciteerd in Obregon, 2015)~\autocite{Obregon2015}. Binnen de informatiebeveiliging bestaat er een fundamentele trade-off tussen \textbf{preventie} en \textbf{detectie} bij het implementeren van beveiligingsmaatregelen. Preventie richt zich op het blokkeren van aanvallen vóórdat ze schade veroorzaken, terwijl detectie focust op het identificeren en analyseren van verdachte activiteiten zodra ze plaatsvinden. Volgens de Guide to Intrusion Detection and Prevention Systems (IDPS) kunnen Intrusion Prevention Systems (IPS) automatisch kwaadaardig verkeer blokkeren, bijvoorbeeld door sessies te beëindigen, pakketten te droppen of firewallregels dynamisch aan te passen~\autocite{Scarfone_Mell_2007}. Intrusion Detection Systems (IDS) daarentegen genereren voornamelijk waarschuwingen, waarna verdere analyse of manuele interventie nodig is. Deze detectiesystemen verminderen het risico op fout-positieven, aangezien ze geen directe impact hebben op het netwerkverkeer. Aan de andere kant is er dan wel meer monitoring en expertise nodig om deze data correct te interpreteren en tijdig op te volgen.
+
+De NIST-richtlijnen benadrukken dat een effectieve beveiligingsstrategie niet enkel steunt op preventie of detectie afzonderlijk, maar op een gelaagde benadering waarbij beide complementair worden ingezet. Preventieve mechanismen beperken het aanvalsoppervlak en blokkeren gekende dreigingen, terwijl detectieve systemen zorgen voor zichtbaarheid, analyse van incidenten en het identificeren van nieuwe of geavanceerde aanvallen~\autocite{Scarfone_Mell_2007}. Naarmate architecturen meer en meer gedecentraliseerd worden, neemt de nood toe aan verhoogde zichtbaarheid en bet centraal analyseren van beveiligingsevents, terwijl tegelijkertijd moet worden vermeden dat preventieve controles de processen binnen de organisatie verstoren.
 
 %========================================
 % 2. Fundamenten van Security Monitoring
