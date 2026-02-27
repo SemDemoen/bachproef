@@ -7,45 +7,119 @@
 
 % Pas na deze inleidende paragraaf komt de eerste sectiehoofding.
 
-Dit hoofdstuk bevat je literatuurstudie. De inhoud gaat verder op de inleiding, maar zal het onderwerp van de bachelorproef *diepgaand* uitspitten. De bedoeling is dat de lezer na lezing van dit hoofdstuk helemaal op de hoogte is van de huidige stand van zaken (state-of-the-art) in het onderzoeksdomein. Iemand die niet vertrouwd is met het onderwerp, weet nu voldoende om de rest van het verhaal te kunnen volgen, zonder dat die er nog andere informatie moet over opzoeken \autocite{Pollefliet2011}.
+% Dit hoofdstuk bevat je literatuurstudie. De inhoud gaat verder op de inleiding, maar zal het onderwerp van de bachelorproef *diepgaand* uitspitten. De bedoeling is dat de lezer na lezing van dit hoofdstuk helemaal op de hoogte is van de huidige stand van zaken (state-of-the-art) in het onderzoeksdomein. Iemand die niet vertrouwd is met het onderwerp, weet nu voldoende om de rest van het verhaal te kunnen volgen, zonder dat die er nog andere informatie moet over opzoeken \autocite{Pollefliet2011}.
 
-Je verwijst bij elke bewering die je doet, vakterm die je introduceert, enz.\ naar je bronnen. In \LaTeX{} kan dat met het commando \texttt{$\backslash${textcite\{\}}} of \texttt{$\backslash${autocite\{\}}}. Als argument van het commando geef je de ``sleutel'' van een ``record'' in een bibliografische databank in het Bib\LaTeX{}-formaat (een tekstbestand). Als je expliciet naar de auteur verwijst in de zin (narratieve referentie), gebruik je \texttt{$\backslash${}textcite\{\}}. Soms is de auteursnaam niet expliciet een onderdeel van de zin, dan gebruik je \texttt{$\backslash${}autocite\{\}} (referentie tussen haakjes). Dit gebruik je bv.~bij een citaat, of om in het bijschrift van een overgenomen afbeelding, broncode, tabel, enz. te verwijzen naar de bron. In de volgende paragraaf een voorbeeld van elk.
+% Je verwijst bij elke bewering die je doet, vakterm die je introduceert, enz.\ naar je bronnen. In \LaTeX{} kan dat met het commando \texttt{$\backslash${textcite\{\}}} of \texttt{$\backslash${autocite\{\}}}. Als argument van het commando geef je de ``sleutel'' van een ``record'' in een bibliografische databank in het Bib\LaTeX{}-formaat (een tekstbestand). Als je expliciet naar de auteur verwijst in de zin (narratieve referentie), gebruik je \texttt{$\backslash${}textcite\{\}}. Soms is de auteursnaam niet expliciet een onderdeel van de zin, dan gebruik je \texttt{$\backslash${}autocite\{\}} (referentie tussen haakjes). Dit gebruik je bv.~bij een citaat, of om in het bijschrift van een overgenomen afbeelding, broncode, tabel, enz. te verwijzen naar de bron. In de volgende paragraaf een voorbeeld van elk.
 
-\textcite{Knuth1998} schreef een van de standaardwerken over sorteer- en zoekalgoritmen. Experten zijn het erover eens dat cloud computing een interessante opportuniteit vormen, zowel voor gebruikers als voor dienstverleners op vlak van informatietechnologie~\autocite{Creeger2009}.
+% \textcite{Knuth1998} schreef een van de standaardwerken over sorteer- en zoekalgoritmen. Experten zijn het erover eens dat cloud computing een interessante opportuniteit vormen, zowel voor gebruikers als voor dienstverleners op vlak van informatietechnologie~\autocite{Creeger2009}.
 
-Let er ook op: het \texttt{cite}-commando voor de punt, dus binnen de zin. Je verwijst meteen naar een bron in de eerste zin die erop gebaseerd is, dus niet pas op het einde van een paragraaf.
+% Let er ook op: het \texttt{cite}-commando voor de punt, dus binnen de zin. Je verwijst meteen naar een bron in de eerste zin die erop gebaseerd is, dus niet pas op het einde van een paragraaf.
 
-\begin{figure}
-  \centering
-  \includegraphics[width=0.8\textwidth]{grail.jpg}
-  \caption[Voorbeeld figuur.]{\label{fig:grail}Voorbeeld van invoegen van een figuur. Zorg altijd voor een uitgebreid bijschrift dat de figuur volledig beschrijft zonder in de tekst te moeten gaan zoeken. Vergeet ook je bronvermelding niet!}
-\end{figure}
+%\begin{figure}
+%  \centering
+%  \includegraphics[width=0.8\textwidth]{grail.jpg}
+%  \caption[Voorbeeld figuur.]{\label{fig:grail}Voorbeeld van invoegen van een figuur. Zorg altijd voor een uitgebreid bijschrift dat de figuur volledig beschrijft zonder in de tekst te moeten gaan zoeken. Vergeet ook je bronvermelding niet!}
+%\end{figure}
 
-\begin{listing}
-  \begin{minted}{python}
-    import pandas as pd
-    import seaborn as sns
+%\begin{listing}
+%  \begin{minted}{python}
+%    import pandas as pd
+%    import seaborn as sns
 
-    penguins = sns.load_dataset('penguins')
-    sns.relplot(data=penguins, x="flipper_length_mm", y="bill_length_mm", hue="species")
-  \end{minted}
-  \caption[Voorbeeld codefragment]{Voorbeeld van het invoegen van een codefragment.}
-\end{listing}
+%    penguins = sns.load_dataset('penguins')
+%    sns.relplot(data=penguins, x="flipper_length_mm", y="bill_length_mm", hue="species")
+%  \end{minted}
+%  \caption[Voorbeeld codefragment]{Voorbeeld van het invoegen van een codefragment.}
+%\end{listing}
 
-\lipsum[7-20]
+%\lipsum[7-20]
 
-\begin{table}
-  \centering
-  \begin{tabular}{lcr}
-    \toprule
-    \textbf{Kolom 1} & \textbf{Kolom 2} & \textbf{Kolom 3} \\
-    $\alpha$         & $\beta$          & $\gamma$         \\
-    \midrule
-    A                & 10.230           & a                \\
-    B                & 45.678           & b                \\
-    C                & 99.987           & c                \\
-    \bottomrule
-  \end{tabular}
-  \caption[Voorbeeld tabel]{\label{tab:example}Voorbeeld van een tabel.}
-\end{table}
+%\begin{table}
+%  \centering
+%  \begin{tabular}{lcr}
+%    \toprule
+%    \textbf{Kolom 1} & \textbf{Kolom 2} & \textbf{Kolom 3} \\
+%    $\alpha$         & $\beta$          & $\gamma$         \\
+%    \midrule
+%    A                & 10.230           & a                \\
+%    B                & 45.678           & b                \\
+%    C                & 99.987           & c                \\
+%    \bottomrule
+%  \end{tabular}
+%  \caption[Voorbeeld tabel]{\label{tab:example}Voorbeeld van een tabel.}
+%\end{table}
 
+%========================================
+% 1. Context en Probleemkader
+%========================================
+
+De laatste jaren is er een enorme groei in de nood voor complexe netwerkinfrastructuren en cloudgebaseerde diensten binnen bedrijven in de IT-sector. Dit heeft geleid tot een aanzienlijke toename in het aantal beveiligingstools en monitoringoplossingen~\autocite{PersistenceITInfra2025}. Ondanks deze evolutie blijkt het voor heel wat organisaties nog steeds moeilijk om een doordachte en doeltreffende architectuur voor security monitoring te ontwerpen en te implementeren~\autocite{Obregon_2015}. De gevolgen van deze eerder moeizame implementatie uiten zich onder meer in dataverlies door onvoldoende zichtbaarheid op security-events en netwerkverkeer, verhoogde kost in nieuwe technologieën en nood aan extra personeel om het overweldigend aantal alerts te verwerken~\autocite{Obregon_2015}. 
+
+%TODO Complexiteit en fragmentatie van security-architecturen
+
+%TODO Spanningsveld tussen preventie en detectie
+%TODO Belang van zichtbaarheid binnen cybersecurity
+"prevention is ideal, but detection is a must" (Dr.\ Eric Cole, geciteerd in Obregon, 2015)~\autocite{Obregon2015}.
+%TODO Netwerksegmentatie als architecturaal beveiligingsprincipe
+
+%========================================
+% 2. Fundamenten van Security Monitoring
+%========================================
+
+%TODO Definitie van security monitoring
+%TODO Security monitoring binnen het NIST Cybersecurity Framework (Detect & Respond)
+%TODO Logbeheer en logmanagementprocessen (genereren tot verwijderen)
+%TODO Uitdagingen bij verwerking van grote hoeveelheden securitydata (big data problematiek)
+%TODO Data centralisatie en normalisatie van logs
+%TODO Correlatie van events en het belang van context
+
+%========================================
+% 3. Detectiemechanismen en Analyse
+%========================================
+
+%TODO Intrusion Detection Systems (IDS) en Intrusion Prevention Systems (IPS)
+%TODO Rule-based vs anomaly-based detectie
+%TODO False positives en false negatives
+%TODO Indicatoren vs precursors binnen incidentdetectie
+%TODO Beperkingen van detectiesystemen
+%TODO KPI’s voor detectie (detectiesnelheid, responstijd, nauwkeurigheid)
+
+%========================================
+% 4. SIEM-systemen en Architecturale Principes
+%========================================
+
+%TODO Definitie en kerncomponenten van SIEM-systemen
+%TODO Logaggregatie, normalisatie en eventcorrelatie
+%TODO Rapportering en dashboards voor stakeholders
+%TODO Technische en organisatorische uitdagingen bij SIEM-implementatie
+%TODO Complexiteit, schaalbaarheid en configuratie-uitdagingen
+%TODO Reden waarom een volledige enterprise-SIEM buiten scope valt
+
+%========================================
+% 5. Incident Response
+%========================================
+
+%TODO Definitie van een security incident (NIST)
+%TODO Incident response lifecycle (detectie, analyse, containment, herstel, lessons learned)
+%TODO SANS Incident Handler’s Handbook
+%TODO Rol van logging en monitoring binnen incident response
+%TODO Automatisering binnen incident response (SOAR-achtige concepten)
+
+%========================================
+% 6. Security in DevOps (DevSecOps)
+%========================================
+
+%TODO Integratie van security in DevOps-processen
+%TODO Continue monitoring binnen CI/CD pipelines
+%TODO Security automation binnen SaaS-omgevingen
+%TODO Uitdagingen van security in dynamische cloudomgevingen
+%TODO Waarom automatisering noodzakelijk is in DevOps-context
+
+%========================================
+% 7. Brug naar het Onderzoek
+%========================================
+
+%TODO Samenvattende synthese van de literatuur
+%TODO Identificatie van kennislacunes of praktische uitdagingen
+%TODO Verantwoording van keuze voor een gefaseerd proof-of-concept
+%TODO Positionering van jouw onderzoek binnen bestaande literatuur
