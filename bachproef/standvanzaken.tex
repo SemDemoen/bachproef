@@ -51,55 +51,74 @@
 
 % TODO: Gruhn, V., & Köhntopp, M. (2021). BRON UIT VOORSTEL ONLINE VINDEN?
 
-%========================================
-% 1. Context en Probleemkader
-%========================================
+% TODO: Subsections!
+% TODO: Bronnen checken!
 
+\section{Context en Probleemstelling}
+\subsection{Uitdagingen bij moderne netwerkarchitecturen}
 De laatste jaren is er een enorme groei in de nood voor complexe netwerkinfrastructuren en cloudgebaseerde diensten binnen bedrijven in de IT-sector. Dit heeft geleid tot een aanzienlijke toename in het aantal beveiligingstools en monitoringoplossingen~\autocite{PersistenceITInfra2025}. Ondanks deze evolutie blijkt het voor heel wat organisaties nog steeds moeilijk om een doordachte en doeltreffende architectuur voor security monitoring te ontwerpen en te implementeren~\autocite{Obregon_2015}. De gevolgen van deze eerder moeizame implementatie uiten zich onder meer in dataverlies door onvoldoende zichtbaarheid op security-events en netwerkverkeer, verhoogde kost in nieuwe technologieën en nood aan extra personeel om het overweldigend aantal alerts te verwerken~\autocite{Obregon_2015}. 
 
 % Complexiteit en fragmentatie van security-architecturen
 % Netwerksegmentatie als architecturaal beveiligingsprincipe
 Het decentraliseren van de virtuele architectuur binnen een onderneming biedt voordelen, zoals verhoogde schaalbaarheid, flexibiliteit en wendbaarheid. Netwerksegmentatie speelt dan ook zeker een belangrijke rol binnen een informatiebeveiligingsstrategie: door het netwerk op te delen in verschillende zones neemt de kans dat een succesvolle aanval zich verspreidt aanzienlijk af, terwijl de zichtbaarheid van het netwerk tegelijkertijd wordt vergroot, \textit{je kan namelijk niet beschermen wat je niet kan zien}~\autocite{Obregon_2015}. Echter brengt het opsplitsen van een dergelijk netwerk ook een aanzienlijke problemen met zich mee, met name de verhoogde complexiteit bij het beveiligen van de systemen~\autocite{billawa2022sok}. Het monitoren van elk afzonderlijk systeem binnen een netwerk is doorgaans ook niet haalbaar vanuit een financieel perspectief en kan bovendien leiden tot een verkeerd gevoel van beveiligingszekerheid binnen de organisatie~\autocite{Obregon_2015}. Daarom is het van cruciaal belang om op een doordachte manier om te gaan met deze recente fragmentatie.
 
-% Spanningsveld tussen preventie en detectie
-"prevention is ideal, but detection is a must" (Dr.\ Eric Cole, geciteerd in Obregon, 2015)~\autocite{Obregon_2015}. Binnen de informatiebeveiliging bestaat er een fundamentele trade-off tussen preventie en detectie bij het implementeren van beveiligingsmaatregelen. Preventie richt zich op het blokkeren van aanvallen vóórdat ze schade veroorzaken, terwijl detectie focust op het identificeren en analyseren van verdachte activiteiten zodra ze plaatsvinden. Volgens de Guide to Intrusion Detection and Prevention Systems (IDPS) kunnen Intrusion Prevention Systems (IPS) automatisch kwaadaardig verkeer blokkeren, bijvoorbeeld door sessies te beëindigen, pakketten te droppen of firewallregels dynamisch aan te passen~\autocite{Scarfone_Mell_2007}. Intrusion Detection Systems (IDS) daarentegen genereren voornamelijk waarschuwingen, waarna verdere analyse of manuele interventie nodig is. Deze detectiesystemen verminderen het risico op fout-positieven, aangezien ze geen directe impact hebben op het netwerkverkeer. Aan de andere kant is er dan wel meer monitoring en expertise nodig om deze data correct te interpreteren en tijdig op te volgen.
+\subsection{Preventie versus detectie}
+"prevention is ideal, but detection is a must" (Dr.\ Eric Cole, geciteerd in~\autocite{Obregon_2015}). Binnen de informatiebeveiliging bestaat er een fundamentele trade-off tussen preventie en detectie bij het implementeren van beveiligingsmaatregelen. Preventie richt zich op het blokkeren van aanvallen vóórdat ze schade veroorzaken, terwijl detectie focust op het identificeren en analyseren van verdachte activiteiten zodra ze plaatsvinden. Volgens de Guide to Intrusion Detection and Prevention Systems (IDPS) kunnen Intrusion Prevention Systems (IPS) automatisch kwaadaardig verkeer blokkeren, bijvoorbeeld door sessies te beëindigen, pakketten te droppen of firewallregels dynamisch aan te passen~\autocite{Scarfone_Mell_2007}. Intrusion Detection Systems (IDS) daarentegen genereren voornamelijk waarschuwingen, waarna verdere analyse of manuele interventie nodig is. Deze detectiesystemen verminderen het risico op fout-positieven, aangezien ze geen directe impact hebben op het netwerkverkeer. Aan de andere kant is er dan wel meer monitoring en expertise nodig om deze data correct te interpreteren en tijdig op te volgen. 
+
+\subsection{Architectuur van Intrusion Detection en Prevention Systems}
+IDS-technologie vindt zijn oorsprong bij Denning~\autocite{Denning1987} en werd verder ontwikkeld door Staniford-Chen et al.~\autocite{StanifordChen1998}. Een belangrijke standaardisering werd later uitgevoerd door CIDF (Common Intrusion Detection Framework) en IDWG (Intrusion Detection Working Group). Zij stelden een basisarchitectuur voor IDPS op, bestaande uit vier functionele modules: E-blocks (Event-boxes), D-blocks (Database-boxes), A-blocks (Analysis-boxes) en R-blocks (Response-boxes)~\autocite{GARCIATEODORO200918}. Een schematische weergave van deze architectuur is te zien in Fig.~\ref{fig:idps_architecture}.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.8\textwidth]{idps_architecture.jpg}
+    \caption[Architectuur van een IDPS]{Schematische weergave van de basisarchitectuur van een IDPS, met de vier functionele modules: E-blocks (Event-boxes), D-blocks (Database-boxes), A-blocks (Analysis-boxes) en R-blocks (Response-boxes).}
+    \label{fig:idps_architecture}
+\end{figure}
 
 De NIST-richtlijnen benadrukken dat een effectieve beveiligingsstrategie niet enkel steunt op preventie of detectie afzonderlijk, maar op een gelaagde benadering waarbij beide complementair worden ingezet. Preventieve mechanismen beperken het aanvalsoppervlak en blokkeren gekende dreigingen, terwijl detectieve systemen zorgen voor zichtbaarheid, analyse van incidenten en het identificeren van nieuwe of geavanceerde aanvallen~\autocite{Scarfone_Mell_2007}. Naarmate architecturen meer en meer gedecentraliseerd worden, neemt de nood toe aan verhoogde zichtbaarheid en bet centraal analyseren van beveiligingsevents, terwijl tegelijkertijd moet worden vermeden dat preventieve controles de processen binnen de organisatie verstoren.
 
-%========================================
-% 2. Fundamenten van Security Monitoring
-%========================================
 
-% Definitie van security monitoring
+\section{Fundamenten van Security Monitoring en Logbeheer}
+\subsection{Definitie en doel van security monitoring}
 Vroeger of later zullen de preventiemaatregelen van een netwerk worden overtroffen door aanvallen, op dat moment is het essentieel om in te zetten op detectie en respons. Security monitoring verwijst naar het detecteren van beveiligingsincidenten door het netwerkverkeer te monitoren en analyseren en is één van de meest relevante benaderingen voor netwerkbeveiliging~\autocite{FuentesGarcia_2020}. Het doel van monitoring is om de staat van een gegeven netwerk te te controleren om abnormale events te detecteren, en ze daarna tijdig te beheren~\autocite{FuentesGarcia_2020}.
 
-% Security monitoring binnen het NIST Cybersecurity Framework (Detect & Respond)
+\subsection{Security monitoring in het NIST Cybersecurity Framework}
 Binnen het NIST Cybersecurity Framework situeert security monitoring zich voornamelijk binnen de functies Detect en Respond. De Detect-functie richt zich op het identificeren van afwijkingen en potentiële beveiligingsincidenten. Hierbij wordt onder andere ingezet op het vastellen van een normale 'baseline' van het systeem- en netwerkgedrag, zodat afwijking sneller gevat kunnen worden. de Respond-functie betrekking heeft op het nemen van gepaste maatregelen om de impact van een incident te beperken en het netwerk zo snel mogelijk te herstellen (recover)~\autocite{NIST_CSF_2018}. Security monitoring vormt dus een belangrijke schakel tussen detectie en respons. Zonder goede monitoring worden incidenten niet tijdig opgemerkt, waardoor een snelle en doordachte reactie moeilijk wordt. Het framework benadrukt daarnaast dat detectie- en responsprocessen regelmatig geëvalueerd en bijgestuurd moeten worden. Op die manier kunnen organisaties zich blijven aanpassen aan nieuwe en steeds veranderende dreigingen en hun algemene weerbaarheid versterken~\autocite{NIST_CSF_2018}.
 
-% Logbeheer en logmanagementprocessen (genereren tot verwijderen)
+\subsection{Logbeheer en logmanagementprocessen}
 Logmanagement omvat het verzamelen en samenvoegen van loggegevens, het bewaren van originele (ongewijzigde) logs, het analyseren van loginhoud en het presenteren van de resultaten, meestal via zoekfuncties, maar ook in rapportvorm~\autocite{Chuvakin_2007}. Daarnaast omvat logmanagement ook het ondersteunen van de bijbehorende werkprocessen en het effectief beheren van de loginhoud. Door deze brede aanpak kunnen loggegevens op allerlei manieren worden benut, niet alleen binnen de IT-sector, maar vaak ook daarbuiten, waardoor ze waardevol zijn voor uiteenlopende toepassingen zoals beveiliging en operationeel beheer~\autocite{Chuvakin_2007}. 
 
-Logs kunnen veel verschillende soorten informatie bevatten over de activiteiten en gebeurtenissen binnen systemen en netwerken, die in veel situaties van groot belang kunnen zijn voor de computerveiligheid van organisaties~\autocite{NIST_logs_2006}. Volgens het National Institute of Standards and Technology is het belangrijk dat organisaties een logmanagementinfrastructuur opzetten en onderhouden, vaak met gecentraliseerde logservers en geschikte opslag van loggegevens~\autocite{NIST_logs_2006}. Een goed ingerichte infrastructuur maakt het mogelijk loggegevens systematisch te verzamelen, te bewaren en te analyseren, zodat incidenten snel kunnen worden opgespoord en onderzocht, en helpt bij het behouden van overzicht en structuur bij grote hoeveelheden logdata. Hiermee speelt logmanagement een cruciale rol in security monitoring, omdat het organisaties in staat stelt verdachte activiteiten en afwijkingen in systemen en netwerken snel te detecteren en hier tijdig op te reageren.
+Logs kunnen veel verschillende soorten informatie bevatten over de activiteiten en gebeurtenissen binnen systemen en netwerken, die in veel situaties van groot belang kunnen zijn voor de computerveiligheid van organisaties~\autocite{NIST_logs_2006}. Volgens het National Institute of Standards and Technology is het belangrijk dat organisaties een logmanagementinfrastructuur opzetten en onderhouden, vaak met gecentraliseerde logservers en geschikte opslag van loggegevens~\autocite{NIST_logs_2006}. Een goed ingerichte infrastructuur maakt het mogelijk loggegevens systematisch te verzamelen, te bewaren en te analyseren, zodat incidenten snel kunnen worden opgespoord en onderzocht, en helpt bij het behouden van overzicht en structuur bij grote hoeveelheden logdata. Hiermee speelt logmanagement een cruciale rol in security monitoring, omdat het organisaties in staat stelt verdachte activiteiten en afwijkingen  systemen en netwerken snel te detecteren en hier tijdig op te reageren.
 
 % Uitdagingen bij verwerking van grote hoeveelheden securitydata (big data problematiek)
 % Data centralisatie en normalisatie van logs
 Het centraliseren en normaliseren van logdata is een belangrijke stap binnen logmanagement, vooral wanneer organisaties te maken hebben met grote hoeveelheden securitydata. Door logs vanuit verschillende systemen en applicaties te centraliseren naar één centrale locatie, zoals een logserver of SIEM-systeem, wordt het overzicht behouden en kan de data effectiever worden geanalyseerd. Normalisatie houdt in dat loggegevens worden omgezet naar een uniform formaat, zodat verschillen in structuur, terminologie en tijdstempels tussen verschillende systemen geen problemen veroorzaken voor analyses~\autocite{NIST_logs_2006}. Zonder centralisatie en normalisatie kunnen grote volumes aan logdata snel onoverzichtelijk worden, wat leidt tot vertragingen bij het detecteren van afwijkingen en incidenten. Door logs consistent te structureren en op één plek te bewaren, kunnen organisaties sneller verbanden leggen, trends herkennen en verdachte activiteiten detecteren. Daarnaast ondersteunt deze aanpak het gemakkelijker automatiseren van monitoringprocessen, wat cruciaal is voor security monitoring in omgevingen met grote en diverse datasets.
 
-%========================================
-% 3. Detectiemechanismen en Analyse
-%========================================
 
-%TODO Intrusion Detection Systems (IDS) en Intrusion Prevention Systems (IPS)
-%TODO Rule-based vs anomaly-based detectie
-%TODO False positives en false negatives
-%TODO Indicatoren vs precursors binnen incidentdetectie
+\section{Detectiemechanismen en Analyse}
+\subsection{Intrusion Detection Systems (IDS) en Intrusion Prevention Systems (IPS)}
+Een Intrusion Detection System (IDS) is software die het detecteren van inbraken automatiseert. Een Intrusion Prevention System (IPS) heeft dezelfde mogelijkheden, maar kan daarnaast ook proberen mogelijke incidenten te stoppen~\autocite{Scarfone_Mell_2007}. Intrusion Detection and Prevention Systems (IDPS) richten zich vooral op het opsporen van potentiële incidenten. Zo kan een IDPS bijvoorbeeld signaleren wanneer een aanvaller een systeem binnendringt door een bestaande kwetsbaarheid uit te buiten. Daarnaast kan een IDPS incidenten rapporteren, informatie loggen en security-overtredingen herkennen, zodat de organisatie de juiste maatregelen kan nemen~\autocite{Scarfone_Mell_2007}. Een nadeel van IDPS-technologie is dat deze nooit volledig foutloze detecties kan garanderen. Regelmatig worden fout-positieve meldingen gegenereerd, en het is onmogelijk om zowel foutpositieven als foutnegatieven volledig te elimineren. Het verminderen van het ene type fout leidt namelijk vaak tot een toename van het andere. Het National Institute of Standards and Technology (NIST) geeft volgende info mee:
+
+\textit{“Many organizations choose to decrease false negatives at the cost of increasing false positives, which means that more malicious events are detected but more analysis resources are needed to differentiate false positives from true malicious events.”}~\autocite{Scarfone_Mell_2007}.
+
+Dit toont aan dat organisaties voortdurend een evenwicht moeten zoeken tussen detectienauwkeurigheid en de beschikbare middelen voor analyse en opvolging.Door de groeiende afhankelijkheid van informatiesystemen en de toenemende frequentie en impact van aanvallen, zijn IDPS’en tegenwoordig vrijwel onmisbaar geworden in de beveiligingsinfrastructuur van vrijwel elke organisatie, daarom is IDPS een noodzakelijke integratie in een centraal platform voor security monitoring. 
+
+% Signature-based vs anomaly-based detectie
+\subsection{Signature-based detectie}
+Binnen IDPS'en worden er verschillende detectiemethodologieën toegepast, waaronder signature-based detection en anomaly-based detection. Een \textit{signature} is een patroon dat overeenkomt met een gekende aanval. Signatuurgebaseerde detectie heeft als doel om deze patronen te vergelijken met waargenomen gebeurtenissen om mogelijke (gekende) incidenten te identificeren~\autocite{Scarfone_Mell_2007}. Een voorbeeld hiervan is een inlogpoging met de gebruikersnaam ``admin'', wat een mogelijke poging tot ongeautoriseerde toegang kan aanduiden. Hoewel signatuurgebaseerde detectie misschien niet de meest geavanceerde strategie is, is ze wel de eenvoudigste om te gebruiken. Het volstaat namelijk om een eenheid van activiteit, zoals een packet of een log entry, te vergelijken met een lijst van signaturen via een eenvoudige stringvergelijking~\autocite{Scarfone_Mell_2007}. 
+
+\subsection{Anomaly-based detectie}
+Anomaliegebaseerde detectiemechanismen proberen eerst het ‘normale’ gedrag van het te beschermen systeem in kaart te brengen. Wanneer een waarneming op een bepaald moment te veel afwijkt van dit normale patroon, en een vooraf bepaalde drempel overschrijdt, wordt een alarm geactiveerd~\autocite{GARCIATEODORO200918}. Daarnaast kan men ook specifiek afwijkend gedrag van een systeem vastleggen. In dat geval wordt een alarm geactiveerd wanneer de waargenomen activiteit binnen een bepaalde marge overeenkomt met het vooraf gedefinieerde abnormale gedrag~\autocite{GARCIATEODORO200918}. 
+
+% Indicatoren vs precursors binnen incidentdetectie
+\subsection{Indicators and precursors}
+Volgens NIST kunnen tekenen van een beveiligingsincident worden onderverdeeld in twee categorieën: \textit{precursors} en \textit{indicators}. Een precursor is een signaal dat aangeeft dat er mogelijk een incident in de toekomst kan plaatsvinden, bijvoorbeeld het scannen van een netwerk op kwetsbaarheden of het gebruik van een bekende exploit. Een indicator daarentegen wijst erop dat een incident al heeft plaatsgevonden of momenteel plaatsvindt, zoals ongewoon netwerkverkeer, meerdere mislukte inlogpogingen of alerts van een IDS/IPS~\autocite{NIST_SP800_61}. Het onderscheid tussen precursors en indicators helpt organisaties om zowel proactief maatregelen te nemen als gepast te reageren op huidige incidenten, waardoor de effectiviteit van een centraal security monitoring platform wordt vergroot.
+
 %TODO Beperkingen van detectiesystemen
 %TODO KPI’s voor detectie (detectiesnelheid, responstijd, nauwkeurigheid)
 
-%========================================
-% 4. SIEM-systemen en Architecturale Principes
-%========================================
 
+\section{SIEM-systemen en architectuurprincipes}
 %TODO Definitie en kerncomponenten van SIEM-systemen
 %TODO Logaggregatie, normalisatie en eventcorrelatie
 %TODO Rapportering en dashboards voor stakeholders
@@ -107,30 +126,18 @@ Het centraliseren en normaliseren van logdata is een belangrijke stap binnen log
 %TODO Complexiteit, schaalbaarheid en configuratie-uitdagingen
 %TODO Reden waarom een volledige enterprise-SIEM buiten scope valt
 
-%========================================
-% 5. Incident Response
-%========================================
 
+\section{Incidentmanagement binnen Security Monitoring}
+... TODO ...
 %TODO Definitie van een security incident (NIST)
 %TODO Incident response lifecycle (detectie, analyse, containment, herstel, lessons learned)
 %TODO SANS Incident Handler’s Handbook
 %TODO Rol van logging en monitoring binnen incident response
 %TODO Automatisering binnen incident response (SOAR-achtige concepten)
 
-%========================================
-% 6. Security in DevOps (DevSecOps)
-%========================================
 
-%TODO Integratie van security in DevOps-processen
-%TODO Continue monitoring binnen CI/CD pipelines
-%TODO Security automation binnen SaaS-omgevingen
-%TODO Uitdagingen van security in dynamische cloudomgevingen
-%TODO Waarom automatisering noodzakelijk is in DevOps-context
-
-%========================================
-% 7. Brug naar het Onderzoek
-%========================================
-
+\section{Brug naar het eigen onderzoek}
+... TODO ...
 %TODO Samenvattende synthese van de literatuur
 %TODO Identificatie van kennislacunes of praktische uitdagingen
 %TODO Verantwoording van keuze voor een gefaseerd proof-of-concept
