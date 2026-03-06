@@ -179,12 +179,39 @@ Naast de installatie vormt ook de integratie van data een belangrijke uitdaging.
 
 
 \section{Incidentmanagement binnen Security Monitoring}
-... TODO ...
-%TODO Definitie van een security incident (NIST)
-%TODO Incident response lifecycle (detectie, analyse, containment, herstel, lessons learned)
-%TODO SANS Incident Handler’s Handbook
-%TODO Rol van logging en monitoring binnen incident response
-%TODO Automatisering binnen incident response (SOAR-achtige concepten)
+\subsection{Security incident definitie}
+Een cybersecurity event wordt gedefinieerd als een verandering op het gebied van cybersecurity die mogelijk impact kan hebben op de operaties van een organisatie, zoals de missie, capaciteiten of reputatie. Wanneer een dergelijk event daadwerkelijk een significante impact heeft en een organisatie moet reageren om schade te beperken of systemen te herstellen, spreken we van een cybersecurity incident \autocite{nist2018}. Deze definitie benadrukt het verschil tussen gewone gebeurtenissen en situaties die een daadwerkelijke respons en herstelmaatregelen vereisen, en vormt de basis voor incident detection en management binnen beveiligingssystemen.
+
+\subsection{Incident response lifecycle}
+De incident response life cycle kan worden weergegeven op basis van de NIST Cybersecurity Framework (CSF) 2.0 Functions, die cybersecuritydoelstellingen op het hoogste niveau organiseren \autocite{nist2025}. Het model onderscheidt zes functies:
+
+\begin{enumerate}
+    \item \textbf{Govern (GV)}: Strategie, verwachtingen en beleid voor cybersecurityrisicomanagement worden vastgesteld, gecommuniceerd en gemonitord.
+    \item \textbf{Identify (ID)}: De huidige cybersecurityrisico’s van de organisatie worden begrepen.
+    \item \textbf{Protect (PR)}: Beveiligingsmaatregelen worden ingezet om de risico’s te beheersen.
+    \item \textbf{Detect (DE)}: Mogelijke cyberaanvallen en compromitteringen worden ontdekt en geanalyseerd.
+    \item \textbf{Respond (RS)}: Acties worden ondernomen naar aanleiding van een gedetecteerd cybersecurityincident.
+    \item \textbf{Recover (RC)}: Systemen en operaties die door een incident zijn getroffen, worden hersteld.
+\end{enumerate}
+
+In dit model ondersteunen \textbf{µGovern, Identify en Protect} organisaties bij het voorkomen van incidenten, voorbereiden op incidenten en het beperken van de impact, terwijl \textbf{Detect, Respond en Recover} helpen bij het ontdekken, beheren, prioriteren, beheersen, uitroeien en herstellen van incidenten. Bovendien is continue verbetering ingebouwd via de Improvement Category binnen de Identify-functie, waardoor lessen uit alle activiteiten gebruikt kunnen worden om incident response en cybersecurityrisicomanagement voortdurend te optimaliseren\autocite{nist2025}.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.8\textwidth]{incident_response_lifecycle}
+      \caption[Incident response life cycle CSF 2.0]{Hoog-niveau incident response life cycle model gebaseerd op de zes CSF 2.0 Functions: Govern (GV), Identify (ID), Protect (PR), Detect (DE), Respond (RS) en Recover (RC), inclusief het concept van continue verbetering\autocite{nist2025}.}
+    \label{fig:incidentresponselifecycle}
+\end{figure}
+
+%TODO SANS Incident Handler’s Handbook - https://www.sans.org/white-papers/33901?utm_source=chatgpt.com
+Het SANS Incident Handler’s Handbook beschrijft praktische richtlijnen voor het beheren van cybersecurity-incidenten. Het boek benadrukt het belang van een systematische aanpak, van detectie en analyse tot containment, herstel en lessons learned. Het biedt voorbeelden van procedures, checklists en best practices voor incident response teams, waardoor organisaties beter voorbereid zijn om op effectieve en consistente wijze op beveiligingsincidenten te reageren \autocite{sans2022}.
+
+%TODO Rol van logging en monitoring binnen incident response - https://www.mdpi.com/1424-8220/21/14/4759
+Logging en monitoring vormen de kern van een effectief incident response-proces. Door continue logverzameling en real-time monitoring kunnen organisaties verdachte activiteiten vroegtijdig detecteren. Gecombineerd met eventcorrelatie en dashboards kunnen security teams prioriteiten stellen, snelle beslissingen nemen en incidenten efficiënt analyseren. Zonder gedetailleerde en goed gestructureerde logs wordt het moeilijk om de impact van incidenten te beoordelen of oorzaak-analyse uit te voeren, waardoor de respons vertraagt \autocite{Gonzalez-Granadillo_2019}.
+
+%TODO Automatisering binnen incident response (SOAR-achtige concepten) -https://www.mdpi.com/1424-8220/21/14/4759
+Automatisering speelt een steeds belangrijkere rol in incident response, met name door SOAR (Security Orchestration, Automation, and Response)-achtige concepten. Door repetitieve taken zoals alerts triage, data gathering en initiële containment te automatiseren, kunnen security teams sneller reageren op incidenten en menselijke fouten verminderen. Automatisering maakt het ook mogelijk om incidenten consistent te behandelen en zorgt ervoor dat organisaties beter kunnen opschalen zonder dat de reactietijd afneemt \autocite{Gonzalez-Granadillo_2019}.
+
 
 
 \section{Brug naar het eigen onderzoek}
@@ -193,3 +220,6 @@ Naast de installatie vormt ook de integratie van data een belangrijke uitdaging.
 %TODO Identificatie van kennislacunes of praktische uitdagingen
 %TODO Verantwoording van keuze voor een gefaseerd proof-of-concept
 %TODO Positionering van jouw onderzoek binnen bestaande literatuur
+
+
+% TODO: BRONNEN CHECKEN!!
