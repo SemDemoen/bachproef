@@ -1,2 +1,80 @@
-\chapter{Probleemanalyse}%
+\chapter{Fase 1: Probleemanalyse}%
 \label{ch:probleemanalyse}
+
+\section{Inleiding}
+In deze fase wordt de huidige situatie binnen Devinity geanalyseerd met betrekking tot security monitoring en incident response in hun SaaS-omgevingen. Het doel van deze analyse is om inzicht te krijgen in de bestaande infrastructuur, gebruikte tools en de belangrijkste knelpunten. Op basis hiervan kan in latere fases een gericht en haalbaar ontwerp worden uitgewerkt.
+
+De informatie in deze probleemanalyse is verzameld via observaties, gesprekken met collega’s en een eerste verkenning van beschikbare logs en systemen.
+
+\section{Huidige toolset en werkwijze}
+Binnen Devinity wordt gebruikgemaakt van verschillende tools voor monitoring, security en incidentopvolging. Voor observability en monitoring wordt onder andere \textbf{New Relic} ingezet. Daarnaast wordt \textbf{Make} gebruikt om bepaalde processen te automatiseren. New Relic kan het best omschreven worden als een AI-powered `observability`-platform dat belanghebbenden helpt bij het plannen, implementeren en draaiende houden van software. Een van de kernfuncties van dit platform is het centraal verzamelen en analyseren van logs en metrics afkomstig uit verschillende onderdelen van de infrastructuur. Hierdoor krijgen developers en analisten real-time inzicht in het gedrag van de applicaties en kunnen afwijkingen snel worden opgemerkt via alerts en dashboards, waardoor potentiële problemen sneller geïdentificeerd worden.
+
+Make wordt binnen de organisatie ingezet als automatisatietool om verschillende systemen met elkaar te verbinden en specifieke taken binnen het kader van security incident management te vereenvoudigen. Via deze tool kunnen gebeurtenissen, zoals fouten of verdachte activiteiten, automatisch worden gedetecteerd en doorgezonden. Op basis van vooraf gedefinieerde scenario’s kunnen meldingen worden gegenereerd, incidenten worden geregistreerd of vervolgstappen worden opgestart. Hierdoor ondersteunt Make het sneller signaleren en opvolgen van potentiële incidenten, al gebeurt dit momenteel eerder op basis van losse automatisaties dan binnen een volledig geïntegreerde securitystrategie. Via deze tool worden scenario’s opgezet die acties uitvoeren op basis van specifieke triggers. Enkele voorbeelden hiervan zijn:  
+
+\begin{itemize}
+    \item Het versturen van notificaties bij herhaalde verwerkingsfouten binnen kritische processen
+    \item Het automatisch aanmaken van workitems binnen Monday.com voor de opvolging van incidenten
+    \item Het genereren van meldingen bij fouten in externe integraties en datastromen
+    \item Het detecteren en melden van ontbrekende of inconsistente data
+    \item Het signaleren van synchronisatieproblemen tussen verschillende systemen
+\end{itemize}
+
+Hoewel Make op deze manier bijdraagt aan een efficiëntere en deels geautomatiseerde opvolging van processen, wordt het momenteel vooral gebruikt voor losse workflows en nog niet als onderdeel van een samenhangende, geïntegreerde security- en monitoringstrategie.
+
+Voor incidentopvolging wordt \textbf{Monday.com} gebruikt. Monday.com is een cloudgebaseerd en visueel platform voor werkbeheer dat voornamelijk wordt gebruikt voor het plannen en organiseren van projecten en taken. Binnen Devinity wordt het platform, naast de gebruikelijke opvolging van projecten, specifiek ingezet om incidenten te registreren en op te volgen. Wanneer zich een probleem voordoet, worden \textit{via een scenario binnen Make} automatisch workitems aangemaakt, zodat het team op de hoogte wordt gebracht en het incident verder kan worden opgevolgd. Deze aanpak is voornamelijk \textbf{reactief}: acties worden pas ondernomen nadat een incident zich heeft voorgedaan en geregistreerd is in het systeem. Hoewel dit zorgt voor een gestructureerde opvolging van incidenten en een overzicht van openstaande werkitems, ontbreekt momenteel een proactief onderdeel dat incidenten vroegtijdig signaleert of automatisch corrigerende maatregelen opstart. Hierdoor ligt de nadruk nog sterk op het registreren en volgen van problemen, in plaats van op het voorkomen of snel mitigeren ervan.
+
+Op vlak van infrastructuur en security wordt gebruikgemaakt van standaard Azure-tools. Een belangrijk onderdeel hiervan is de Web Application Firewall (WAF), waarin zowel managed rules als recent geïmplementeerde custom rules worden toegepast. De managed rules bestaan uit standaardregelsets, zoals \textit{Microsoft BotManagerRuleSet} en \textit{OWASP ruleset}, die samen zorgen voor een brede basisbescherming tegen veelvoorkomende aanvallen, met in totaal  een 200-tal regels. De custom rules zijn specifiek ontwikkeld om te voldoen aan de unieke vereisten van de applicaties van Devinity, zoals voor GraphQL-verkeer, online betalingen of interne API’s. Deze regels bestaan uit één of meerdere voorwaarden gevolgd door een actie, en worden allemaal als match rules toegepast binnen de WAF-policy. Voor testdoeleinden in de QA-omgeving kunnen deze custom rules tijdelijk worden uitgeschakeld, zodat de effecten van de regels kunnen worden geanalyseerd zonder de werking van de productieomgeving te beïnvloeden.
+
+Naast de WAF wordt voor bredere, globale securitymeldingen ook Microsoft 365 Defender gebruikt. Dit platform stuurt meldingen via e-mail en biedt een overzicht van potentiële bedreigingen op bedrijfsniveau, waardoor er sneller actie kan worden ondernomen bij security-incidenten die meerdere systemen of diensten kunnen beïnvloeden. In de praktijk worden deze e-mails echter nauwelijks bekeken, omdat er vaak weinig direct op te ondernemen acties zijn of omdat de scope van de meldingen te breed is om gericht te kunnen handelen. Hierdoor ontstaan er vaak meldingen die wel geregistreerd worden, maar die niet verder worden opgevolgd, waardoor mogelijk belangrijke signalen over het hoofd gezien worden. Samen vormen de WAF en Microsoft 365 Defender een combinatie van real-time bescherming en breed overzicht, maar ze bieden nog geen geïntegreerd beeld van de security-status en incidenten binnen het bedrijf. Logs, meldingen en incidenten zijn verspreid over meerdere systemen, wat analyse en prioritering moeilijker maakt, en het ontbreekt aan een gecentraliseerd platform waarin correlaties tussen verschillende events kunnen worden gelegd.  
+
+Hoewel deze tools elk hun eigen functie vervullen, is er momenteel geen centrale integratie tussen de systemen. Hierdoor ontbreekt een globaal overzicht van alle security-events en monitoringdata, waardoor het moeilijk is om trends te herkennen, risico’s in te schatten en proactief te reageren op mogelijke dreigingen.
+
+
+
+\section{Analyse van logging en monitoring}
+Een van de belangrijkste vaststellingen binnen Devinity is dat logging en monitoring nog niet volledig zijn uitgewerkt en grotendeels verspreid plaatsvinden. Hoewel er logs beschikbaar zijn binnen verschillende systemen, zoals New Relic, de Azure Portal WAF, Microsoft 365 Defender en diverse applicaties, worden deze momenteel niet systematisch verzameld of geanalyseerd. Logs blijven vaak in afzonderlijke systemen staan zoals mailboxen of monday.com workitems, waardoor het moeilijk is om een volledig en samenhangend overzicht te verkrijgen van alle gebeurtenissen binnen de infrastructuur. Dit beperkt de mogelijkheden om trends of patronen in incidenten te herkennen, en maakt het snel identificeren van kritieke problemen of verdachte activiteiten een heel stuk ingewikkelder.
+
+Het ontbreken van een centraal platform betekent dat het leggen van verbanden tussen verschillende events een handmatig en niet-gestandaardiseerd proces is. Analisten moeten informatie uit meerdere bronnen samenbrengen, wat tijdrovend is en foutgevoelig kan zijn. Hierdoor kunnen kleine signalen die duiden op potentiële dreigingen gemakkelijk over het hoofd worden gezien. Bovendien is er geen automatische prioritering van gebeurtenissen, waardoor het risico bestaat dat belangrijke meldingen niet op tijd worden opgevolgd. Deze verdeelde aanpak maakt het ook lastig om een snelle incident response op te zetten, aangezien relevante context vaak ontbreekt of moeilijk terug te vinden is over de verschillende delen van de architectuur.
+
+Daarnaast ontbreken duidelijke KPI’s of meetpunten die specifiek gericht zijn op security monitoring. Hierdoor kan de effectiviteit van de huidige monitoringaanpak nauwelijks objectief worden beoordeeld. Zonder meetbare indicatoren is het moeilijk vast te stellen of de ingezette tools en gang van zaken daadwerkelijk bijdragen aan het vroegtijdig detecteren van incidenten, of dat er juist blinde vlekken ontstaan in de observability van kritieke processen. Door het ontbreken van meetbare indicatoren kan het bedrijf moeilijk beoordelen of veranderingen in de monitoring effectief zijn, en is het lastiger om de veiligheidscontroles continu te verbeteren.
+
+Het feit dat er tot nu toe nog geen (grote) incidenten zijn geweest, zoals aangegeven door de developers, betekent dat de tekortkomingen in logging en monitoring nog niet sterk naar voren zijn gekomen. Hoewel dit op het eerste gezicht geruststellend lijkt, betekent het juist dat er een onzichtbaar risico aanwezig is: \textbf{potentiële problemen of kwetsbaarheden kunnen onopgemerkt blijven totdat ze tot een ernstig incident leiden}. In combinatie met de verspreide tools en het gebrek aan centralisatie vormt dit een situatie waarin reactief handelen nog steeds de norm is, in plaats van een proactieve detectie en preventie van securityproblemen. Een structurele verbetering van logging en monitoring, inclusief centralisatie, beschrijven van events en duidelijke meetpunten, is daarom noodzakelijk om een solide en betrouwbaar securitybeheer op te bouwen.
+
+
+
+\section{Firewallconfiguratie en securityregels}
+Binnen Devinity vormt de configuratie van de Web Application Firewall (WAF) binnen Azure, een cruciaal onderdeel van de security-infrastructuur. Correct ingestelde firewallregels zijn essentieel om zowel de applicaties te beschermen tegen externe aanvallen als de beschikbaarheid en werking van de diensten te waarborgen. Door de verschillen tussen omgevingen, applicaties en type verkeer is het opstellen van consistente en effectieve regels echter complex. Dit maakt firewallbeheer een belangrijk aandachtspunt binnen het huidige securityproces van het bedrijf.
+
+Een concreet probleem, zoals vermeld door het team, is de onzekerheid over welke verzoeken precies toegelaten moeten worden en welke geblokkeerd. Het bepalen van deze grens is een fijne balans: enerzijds moet de firewall streng genoeg zijn om potentiële aanvallen effectief te blokkeren, anderzijds mag de werking en efficiëntie van de applicaties niet worden verstoord. Een foutieve configuratie kan zowel securityrisico’s als functionele problemen veroorzaken. Deze uitdaging wordt nog moeilijker door de diversiteit aan applicaties en diensten binnen Devinity, elk met hun eigen verkeerspatronen en specifieke eisen.
+
+Een extra uitdagende factor is het GraphQL-verkeer dat naar de verschillende backends gaat. Dit type verkeer vereist vaak meer verfijnde en aangepaste controles, omdat reguliere regels te algemeen zijn om alle mogelijke kwetsbaarheden af te dekken. Daarnaast is het voor het development team vaak onduidelijk welke defaultinstellingen van de firewall actief zijn en hoe deze precies in werking treden. Het gebrek aan inzicht in deze standaardregels vermindert de effectiviteit van het beheer en maakt het gecontroleerd doorvoeren van wijzigingen of nieuwe regels nog ingewikkelder.
+
+Hoewel de meeste securityregels en de basisconfiguratie van de firewall recent opnieuw zijn opgezet, wordt de verwerking en opvolging van deze informatie nog niet systematisch uitgevoerd. De huidige workflow is grotendeels gebaseerd op scenario’s in Make die incidenten of alerts doorsturen naar workitems in Monday.com. Dit zorgt wel voor een minimale opvolging, maar er ontbreekt een overzichtelijk en gecentraliseerd proces voor het beheren en evalueren van firewallregels. Hierdoor heeft het team beperkt inzicht in de configuratie, is het moeilijk om wijzigingen bij te houden en kunnen incidenten niet altijd snel of consistent worden afgehandeld.
+
+Er is daarom een duidelijke nood aan een beter gestructureerd proces voor firewallconfiguraties en securityregels. Idealiter worden alle regels, alerts en incidenten op een centrale plek verzameld en op een overzichtelijke manier gepresenteerd, zodat belanghebbenden een duidelijk beeld hebben van de configuratie en de status van incidenten. Dit zorgt ervoor dat belangrijke informatie niet over het hoofd wordt gezien, prioriteiten helder zijn en acties efficiënt kunnen worden opgevolgd. Hoewel in dit proof-of-concept niet wordt voorzien in het direct aanpassen van de configuratie, kan het verbeteren van inzicht en overzicht de reactietijd bij incidenten verkorten en de monitoring en opvolging binnen het securityproces van Devinity heel wat verbeteren.
+
+
+
+%TODO
+\section{Verspreiding van tools en gebrek aan centralisatie}
+Een bijkomend probleem is de sterke verspreiding van tools binnen de infrastructuur. Monitoring, logging, security en incidentopvolging gebeuren elk in verschillende systemen, vaak zonder directe koppeling tussen elkaar.
+
+Dit gebrek aan centralisatie zorgt ervoor dat informatie gefragmenteerd is. Hierdoor kost het meer tijd om een volledig beeld te krijgen van een situatie, en neemt de kans toe dat belangrijke signalen gemist worden. Het ontbreken van één centraal dashboard of platform bemoeilijkt zowel dagelijkse opvolging als diepgaandere analyses.
+
+%TODO
+\section{Huidige aanpak van incident response}
+De huidige aanpak van incident response is voornamelijk reactief. Wanneer een probleem zich voordoet, wordt dit geregistreerd en opgevolgd via tools zoals Monday.com. Er is echter nog geen geautomatiseerd systeem dat proactief bedreigingen detecteert en hierop reageert.
+
+Daarnaast ontbreekt een duidelijk uitgewerkt plan van aanpak voor incident response. Er zijn geen gestandaardiseerde procedures of workflows die beschrijven hoe met verschillende types incidenten moet worden omgegaan. Dit kan leiden tot inconsistente reacties en een langere responstijd.
+
+%TODO
+\section{Probleemstelling}
+Op basis van de analyse kunnen de belangrijkste problemen als volgt samengevat worden:
+
+De huidige omgeving beschikt over verschillende tools, maar deze zijn niet geïntegreerd, wat leidt tot een gebrek aan overzicht. Logging en monitoring worden nog niet systematisch aangepakt, waardoor het moeilijk is om problemen tijdig te detecteren. De configuratie van de firewall is complex en niet eenduidig, wat risico’s met zich meebrengt op zowel security- als functioneel vlak. Daarnaast is de incident response voornamelijk reactief en ontbreekt een duidelijke, gestandaardiseerde aanpak.
+
+%TODO
+\section{Conclusie}
+De analyse toont aan dat er nood is aan een meer gestructureerde en geïntegreerde aanpak voor security monitoring en incident response. Een centraal systeem dat logs verzamelt, analyseert en correleert, gecombineerd met geautomatiseerde detectie en respons, kan deze knelpunten aanpakken.
+
+Deze probleemanalyse vormt de basis voor het verdere ontwerp van een oplossing die beter aansluit bij de noden van Devinity en die schaalbaar is binnen hun DevOps-omgeving.
