@@ -6,75 +6,145 @@ In deze fase wordt de huidige situatie binnen Devinity geanalyseerd met betrekki
 
 De informatie in deze probleemanalyse is verzameld via observaties, gesprekken met collega’s en een eerste verkenning van beschikbare logs en systemen.
 
-\section{Huidige toolset en werkwijze}
-Binnen Devinity wordt gebruikgemaakt van verschillende tools voor monitoring, security en incidentopvolging. Voor observability en monitoring wordt onder andere \textbf{New Relic} ingezet. Daarnaast wordt \textbf{Make} gebruikt om bepaalde processen te automatiseren. New Relic kan het best omschreven worden als een AI-powered `observability`-platform dat belanghebbenden helpt bij het plannen, implementeren en draaiende houden van software. Een van de kernfuncties van dit platform is het centraal verzamelen en analyseren van logs en metrics afkomstig uit verschillende onderdelen van de infrastructuur. Hierdoor krijgen developers en analisten real-time inzicht in het gedrag van de applicaties en kunnen afwijkingen snel worden opgemerkt via alerts en dashboards, waardoor potentiële problemen sneller geïdentificeerd worden.
+%% -----------------------------------
 
-Make wordt binnen de organisatie ingezet als automatisatietool om verschillende systemen met elkaar te verbinden en specifieke taken binnen het kader van security incident management te vereenvoudigen. Via deze tool kunnen gebeurtenissen, zoals fouten of verdachte activiteiten, automatisch worden gedetecteerd en doorgezonden. Op basis van vooraf gedefinieerde scenario’s kunnen meldingen worden gegenereerd, incidenten worden geregistreerd of vervolgstappen worden opgestart. Hierdoor ondersteunt Make het sneller signaleren en opvolgen van potentiële incidenten, al gebeurt dit momenteel eerder op basis van losse automatisaties dan binnen een volledig geïntegreerde securitystrategie. Via deze tool worden scenario’s opgezet die acties uitvoeren op basis van specifieke triggers. Enkele voorbeelden hiervan zijn:  
+\section{Huidige toolset en werkwijze}
+Binnen Devinity wordt gebruikgemaakt van verschillende tools voor monitoring, security en incidentopvolging. Voor observability en monitoring wordt onder andere \textit{New Relic} ingezet. Daarnaast wordt \textit{Make} gebruikt om bepaalde processen te automatiseren. 
+
+\subsection{New Relic}
+New Relic kan het best omschreven worden als een AI-powered `observability`-platform dat belanghebbenden helpt bij het plannen, implementeren en draaiende houden van software. Eén van de kernfuncties van dit platform is het centraal verzamelen en analyseren van logs en metrics afkomstig uit verschillende onderdelen van de infrastructuur. Hierdoor kunnen developers en analisten real-time inzicht krijgen in het gedrag van de applicaties en kunnen afwijkingen snel worden opgemerkt via alerts en dashboards, waardoor potentiële problemen geïdentificeerd kunnen worden. Binnen het bedrijf wordt er momenteel echter niet optimaal gebruikgemaakt van deze mogelijkheden. Veel functionaliteiten van New Relic blijven onbenut en de verzamelde data wordt momenteel nog niet ingezet voor een proactieve monitoringstrategie.
+
+\subsection{Make}
+Make wordt binnen de organisatie ingezet als automatisatietool om verschillende systemen met elkaar te verbinden en specifieke taken binnen het kader van security incident management te vereenvoudigen. Via deze tool kunnen gebeurtenissen, zoals fouten of verdachte activiteiten, automatisch worden gedetecteerd en doorgezonden. Op basis van vooraf gedefinieerde scenario’s kunnen meldingen worden gegenereerd en incidenten worden geregistreerd om volgende stappen op te kunnen starten. Hierdoor ondersteunt Make het sneller signaleren en opvolgen van potentiële incidenten, al gebeurt dit momenteel eerder op basis van losse automatisaties dan binnen een volledig geïntegreerde securitystrategie. Via deze tool worden scenario’s opgezet die acties uitvoeren op basis van specifieke triggers. Enkele voorbeelden hiervan binnen het bedrijf zijn: 
 
 \begin{itemize}
     \item Het versturen van notificaties bij herhaalde verwerkingsfouten binnen kritische processen
-    \item Het automatisch aanmaken van workitems binnen Monday.com voor de opvolging van incidenten
     \item Het genereren van meldingen bij fouten in externe integraties en datastromen
     \item Het detecteren en melden van ontbrekende of inconsistente data
     \item Het signaleren van synchronisatieproblemen tussen verschillende systemen
+    \item Het automatisch aanmaken van workitems binnen Monday.com voor de opvolging van incidenten
 \end{itemize}
 
 Hoewel Make op deze manier bijdraagt aan een efficiëntere en deels geautomatiseerde opvolging van processen, wordt het momenteel vooral gebruikt voor losse workflows en nog niet als onderdeel van een samenhangende, geïntegreerde security- en monitoringstrategie.
 
-Voor incidentopvolging wordt \textbf{Monday.com} gebruikt. Monday.com is een cloudgebaseerd en visueel platform voor werkbeheer dat voornamelijk wordt gebruikt voor het plannen en organiseren van projecten en taken. Binnen Devinity wordt het platform, naast de gebruikelijke opvolging van projecten, specifiek ingezet om incidenten te registreren en op te volgen. Wanneer zich een probleem voordoet, worden \textit{via een scenario binnen Make} automatisch workitems aangemaakt, zodat het team op de hoogte wordt gebracht en het incident verder kan worden opgevolgd. Deze aanpak is voornamelijk \textbf{reactief}: acties worden pas ondernomen nadat een incident zich heeft voorgedaan en geregistreerd is in het systeem. Hoewel dit zorgt voor een gestructureerde opvolging van incidenten en een overzicht van openstaande werkitems, ontbreekt momenteel een proactief onderdeel dat incidenten vroegtijdig signaleert of automatisch corrigerende maatregelen opstart. Hierdoor ligt de nadruk nog sterk op het registreren en volgen van problemen, in plaats van op het voorkomen of snel mitigeren ervan.
+\subsection{Monday.com}
+Voor incidentopvolging wordt \textit{Monday.com} gebruikt. Monday.com is een cloudgebaseerd en visueel platform voor werkbeheer dat voornamelijk wordt gebruikt voor het plannen en organiseren van activiteiten en taken. Binnen Devinity wordt het platform, naast de gebruikelijke opvolging van projecten, specifiek ingezet om incidenten te registreren en op te volgen. Wanneer zich een probleem voordoet, worden \textit{via een scenario binnen Make} automatisch workitems aangemaakt, zodat het team op de hoogte wordt gebracht en het incident verder kan worden opgevolgd. Deze aanpak is voornamelijk \textit{reactief}: acties worden pas ondernomen nadat een incident zich heeft voorgedaan en geregistreerd is in het systeem. Hoewel dit zorgt voor een opvolging van incidenten en een overzicht van openstaande workitems, ontbreekt momenteel een proactief onderdeel dat incidenten vroegtijdig signaleert of automatisch corrigerende maatregelen opstart. Hierdoor ligt de nadruk nog sterk op het registreren en volgen van problemen, in plaats van op het voorkomen of snel mitigeren ervan.
 
-Op vlak van infrastructuur en security wordt gebruikgemaakt van standaard Azure-tools. Een belangrijk onderdeel hiervan is de Web Application Firewall (WAF), waarin zowel managed rules als recent geïmplementeerde custom rules worden toegepast. De managed rules bestaan uit standaardregelsets, zoals \textit{Microsoft BotManagerRuleSet} en \textit{OWASP ruleset}, die samen zorgen voor een brede basisbescherming tegen veelvoorkomende aanvallen, met in totaal  een 200-tal regels. De custom rules zijn specifiek ontwikkeld om te voldoen aan de unieke vereisten van de applicaties van Devinity, zoals voor GraphQL-verkeer, online betalingen of interne API’s. Deze regels bestaan uit één of meerdere voorwaarden gevolgd door een actie, en worden allemaal als match rules toegepast binnen de WAF-policy. Voor testdoeleinden in de QA-omgeving kunnen deze custom rules tijdelijk worden uitgeschakeld, zodat de effecten van de regels kunnen worden geanalyseerd zonder de werking van de productieomgeving te beïnvloeden.
+\subsection{Azure Portal Tools}
+Op vlak van infrastructuur en security wordt gebruikgemaakt van standaard \textit{Azure portal tools}. Een belangrijk onderdeel hiervan is de \textit{Web Application Firewall (WAF)}, waarin zowel managed rules als recent geïmplementeerde custom rules worden toegepast. De managed rules bestaan uit standaardregelsets, zoals \textit{Microsoft BotManagerRuleSet} en \textit{OWASP ruleset}, die samen zorgen voor een brede basisbescherming tegen veelvoorkomende aanvallen, met in totaal  een 200-tal regels. De custom rules zijn specifiek ontwikkeld om te voldoen aan de unieke vereisten van de applicaties van Devinity, met nadruk op GraphQL-verkeer en interne API’s. Deze regels bestaan uit één of meerdere voorwaarden die, wanneer ze worden vervuld, een specifieke actie activeren. Ze worden allemaal ingesteld als match rules binnen de WAF-policy, zodat de firewall op basis van deze voorwaarden beslissingen kan nemen over het toestaan of blokkeren van verkeer. Voor testdoeleinden in de QA-omgeving kunnen deze custom rules tijdelijk worden uitgeschakeld, zodat de effecten van de regels kunnen worden geanalyseerd zonder de werking van de productieomgeving te beïnvloeden.
 
-Naast de WAF wordt voor bredere, globale securitymeldingen ook Microsoft 365 Defender gebruikt. Dit platform stuurt meldingen via e-mail en biedt een overzicht van potentiële bedreigingen op bedrijfsniveau, waardoor er sneller actie kan worden ondernomen bij security-incidenten die meerdere systemen of diensten kunnen beïnvloeden. In de praktijk worden deze e-mails echter nauwelijks bekeken, omdat er vaak weinig direct op te ondernemen acties zijn of omdat de scope van de meldingen te breed is om gericht te kunnen handelen. Hierdoor ontstaan er vaak meldingen die wel geregistreerd worden, maar die niet verder worden opgevolgd, waardoor mogelijk belangrijke signalen over het hoofd gezien worden. Samen vormen de WAF en Microsoft 365 Defender een combinatie van real-time bescherming en breed overzicht, maar ze bieden nog geen geïntegreerd beeld van de security-status en incidenten binnen het bedrijf. Logs, meldingen en incidenten zijn verspreid over meerdere systemen, wat analyse en prioritering moeilijker maakt, en het ontbreekt aan een gecentraliseerd platform waarin correlaties tussen verschillende events kunnen worden gelegd.  
+\subsection{Microsoft Notifications}
+Naast de WAF wordt voor bredere, globale securitymeldingen ook \textit{Microsoft 365 Defender} gebruikt. Hiermee kunnen e‑mailmeldingen worden ingesteld via de Microsoft Defender‑portal (Defender XDR email notifications), zodat het team op basis van ingestelde regels berichten ontvangen over nieuwe incidenten of updates van bestaande incidenten. In de praktijk worden deze e‑mails echter nauwelijks bekeken, omdat er vaak weinig directe acties mogelijk zijn of omdat de scope van de meldingen te breed is om gericht te kunnen handelen. Hierdoor ontstaan vaak meldingen die wel geregistreerd worden, maar niet verder worden opgevolgd, waardoor mogelijk belangrijke signalen over het hoofd worden gezien. Samen vormen de WAF en Microsoft 365 Defender een combinatie van real‑time bescherming en breed overzicht, maar ze bieden nog geen geïntegreerd beeld van de security‑status en incidenten binnen het bedrijf.
 
-Hoewel deze tools elk hun eigen functie vervullen, is er momenteel geen centrale integratie tussen de systemen. Hierdoor ontbreekt een globaal overzicht van alle security-events en monitoringdata, waardoor het moeilijk is om trends te herkennen, risico’s in te schatten en proactief te reageren op mogelijke dreigingen.
+\textit{Logs, meldingen en incidenten zijn verspreid over meerdere systemen}, waardoor analyse en prioritering ingewikkelder worden. Er ontbreekt een gecentraliseerd platform waarin correlaties tussen verschillende events gelegd kunnen worden. Hoewel de individuele tools elk hun functie vervullen, is er momenteel geen integratie tussen de systemen, wat resulteert in een gebrek aan een globaal overzicht van alle security-events en monitoringdata. Dit maakt het herkennen van trends, het inschatten van risico’s en het proactief reageren op mogelijke dreigingen heel wat moeilijker.
 
-
+%% -----------------------------------
 
 \section{Analyse van logging en monitoring}
-Een van de belangrijkste vaststellingen binnen Devinity is dat logging en monitoring nog niet volledig zijn uitgewerkt en grotendeels verspreid plaatsvinden. Hoewel er logs beschikbaar zijn binnen verschillende systemen, zoals New Relic, de Azure Portal WAF, Microsoft 365 Defender en diverse applicaties, worden deze momenteel niet systematisch verzameld of geanalyseerd. Logs blijven vaak in afzonderlijke systemen staan zoals mailboxen of monday.com workitems, waardoor het moeilijk is om een volledig en samenhangend overzicht te verkrijgen van alle gebeurtenissen binnen de infrastructuur. Dit beperkt de mogelijkheden om trends of patronen in incidenten te herkennen, en maakt het snel identificeren van kritieke problemen of verdachte activiteiten een heel stuk ingewikkelder.
+\textit{Eén van de belangrijkste observaties binnen Devinity is dat logging en monitoring nog niet volledig zijn uitgewerkt en grotendeels verspreid plaatsvinden.} Hoewel er logs beschikbaar zijn binnen de verschillende systemen (New Relic, de Azure Portal WAF, Microsoft 365 Defender en diverse applicaties), worden deze momenteel niet systematisch verzameld of geanalyseerd. Logs blijven vaak in afzonderlijke systemen staan zoals mailboxen of monday.com workitems, waardoor het moeilijk is om een volledig en samenhangend overzicht te verkrijgen van alle events binnen de infrastructuur. Dit beperkt de mogelijkheden om trends of patronen in incidenten te herkennen, en maakt het snel identificeren van kritieke problemen of verdachte activiteiten een heel stuk ingewikkelder.
 
-Het ontbreken van een centraal platform betekent dat het leggen van verbanden tussen verschillende events een handmatig en niet-gestandaardiseerd proces is. Analisten moeten informatie uit meerdere bronnen samenbrengen, wat tijdrovend is en foutgevoelig kan zijn. Hierdoor kunnen kleine signalen die duiden op potentiële dreigingen gemakkelijk over het hoofd worden gezien. Bovendien is er geen automatische prioritering van gebeurtenissen, waardoor het risico bestaat dat belangrijke meldingen niet op tijd worden opgevolgd. Deze verdeelde aanpak maakt het ook lastig om een snelle incident response op te zetten, aangezien relevante context vaak ontbreekt of moeilijk terug te vinden is over de verschillende delen van de architectuur.
+Het ontbreken van een centraal platform betekent dat verbanden leggen tussen verschillende events een handmatig en niet-gestandaardiseerd proces is. Analisten moeten informatie uit meerdere bronnen samenbrengen, wat tijdrovend is en foutgevoelig kan zijn. Hierdoor kunnen kleine signalen die duiden op potentiële dreigingen gemakkelijk over het hoofd worden gezien. Bovendien is er geen overzichtelijke prioritering van gebeurtenissen, waardoor het risico bestaat dat belangrijke meldingen niet op tijd worden opgevolgd. Deze verdeelde aanpak maakt het ook lastig om een snelle incident response op te zetten, aangezien relevante context vaak ontbreekt of moeilijk terug te vinden is over de verschillende delen van de architectuur.
 
-Daarnaast ontbreken duidelijke KPI’s of meetpunten die specifiek gericht zijn op security monitoring. Hierdoor kan de effectiviteit van de huidige monitoringaanpak nauwelijks objectief worden beoordeeld. Zonder meetbare indicatoren is het moeilijk vast te stellen of de ingezette tools en gang van zaken daadwerkelijk bijdragen aan het vroegtijdig detecteren van incidenten, of dat er juist blinde vlekken ontstaan in de observability van kritieke processen. Door het ontbreken van meetbare indicatoren kan het bedrijf moeilijk beoordelen of veranderingen in de monitoring effectief zijn, en is het lastiger om de veiligheidscontroles continu te verbeteren.
+Daarnaast ontbreken duidelijke KPI’s of meetpunten voor security monitoring. Dit maakt het lastig om objectief te beoordelen of de huidige aanpak effectief is en of de ingezette tools daadwerkelijk bijdragen aan het vroegtijdig detecteren van incidenten. Zonder meetbare indicatoren ontstaan er blinde vlekken in kritieke processen, en wordt het moeilijk om veranderingen te evalueren en de monitoring en veiligheidscontroles continu te verbeteren.
 
-Het feit dat er tot nu toe nog geen (grote) incidenten zijn geweest, zoals aangegeven door de developers, betekent dat de tekortkomingen in logging en monitoring nog niet sterk naar voren zijn gekomen. Hoewel dit op het eerste gezicht geruststellend lijkt, betekent het juist dat er een onzichtbaar risico aanwezig is: \textbf{potentiële problemen of kwetsbaarheden kunnen onopgemerkt blijven totdat ze tot een ernstig incident leiden}. In combinatie met de verspreide tools en het gebrek aan centralisatie vormt dit een situatie waarin reactief handelen nog steeds de norm is, in plaats van een proactieve detectie en preventie van securityproblemen. Een structurele verbetering van logging en monitoring, inclusief centralisatie, beschrijven van events en duidelijke meetpunten, is daarom noodzakelijk om een solide en betrouwbaar securitybeheer op te bouwen.
+Het feit dat er tot nu toe nog geen (grote) incidenten zijn geweest, zoals aangegeven door de developers, betekent dat de tekortkomingen in logging en monitoring nog niet sterk naar voren zijn gekomen. Hoewel dit op het eerste gezicht geruststellend lijkt, betekent het juist dat er een onzichtbaar risico aanwezig is: \textit{potentiële problemen of kwetsbaarheden kunnen onopgemerkt blijven totdat ze tot een ernstig incident leiden}. In combinatie met de verspreide tools en het gebrek aan centralisatie vormt dit een situatie waarin reactief handelen nog steeds de standaardaanpak blijft, in plaats van een proactieve detectie en preventie van securityproblemen. Een structurele verbetering van logging en monitoring, inclusief centralisatie, beschrijven van events en duidelijke meetpunten, is daarom noodzakelijk om een solide en betrouwbaar securitybeheer op te bouwen.
 
-
+%% -----------------------------------
 
 \section{Firewallconfiguratie en securityregels}
-Binnen Devinity vormt de configuratie van de Web Application Firewall (WAF) binnen Azure, een cruciaal onderdeel van de security-infrastructuur. Correct ingestelde firewallregels zijn essentieel om zowel de applicaties te beschermen tegen externe aanvallen als de beschikbaarheid en werking van de diensten te waarborgen. Door de verschillen tussen omgevingen, applicaties en type verkeer is het opstellen van consistente en effectieve regels echter complex. Dit maakt firewallbeheer een belangrijk aandachtspunt binnen het huidige securityproces van het bedrijf.
+Binnen Devinity vormt de \textit{configuratie van de Web Application Firewall (WAF)} binnen Azure een cruciaal onderdeel van de security-infrastructuur. Correct ingestelde firewallregels zijn essentieel om zowel de applicaties te beschermen tegen externe aanvallen als de beschikbaarheid en werking van de diensten te waarborgen. Door de verschillen tussen omgevingen, applicaties en type verkeer is het opstellen van consistente en effectieve regels echter complex. Dit maakt firewallbeheer een belangrijk aandachtspunt binnen het huidige securityproces van het bedrijf.
 
 Een concreet probleem, zoals vermeld door het team, is de onzekerheid over welke verzoeken precies toegelaten moeten worden en welke geblokkeerd. Het bepalen van deze grens is een fijne balans: enerzijds moet de firewall streng genoeg zijn om potentiële aanvallen effectief te blokkeren, anderzijds mag de werking en efficiëntie van de applicaties niet worden verstoord. Een foutieve configuratie kan zowel securityrisico’s als functionele problemen veroorzaken. Deze uitdaging wordt nog moeilijker door de diversiteit aan applicaties en diensten binnen Devinity, elk met hun eigen verkeerspatronen en specifieke eisen.
 
 Een extra uitdagende factor is het GraphQL-verkeer dat naar de verschillende backends gaat. Dit type verkeer vereist vaak meer verfijnde en aangepaste controles, omdat reguliere regels te algemeen zijn om alle mogelijke kwetsbaarheden af te dekken. Daarnaast is het voor het development team vaak onduidelijk welke defaultinstellingen van de firewall actief zijn en hoe deze precies in werking treden. Het gebrek aan inzicht in deze standaardregels vermindert de effectiviteit van het beheer en maakt het gecontroleerd doorvoeren van wijzigingen of nieuwe regels nog ingewikkelder.
 
-Hoewel de meeste securityregels en de basisconfiguratie van de firewall recent opnieuw zijn opgezet, wordt de verwerking en opvolging van deze informatie nog niet systematisch uitgevoerd. De huidige workflow is grotendeels gebaseerd op scenario’s in Make die incidenten of alerts doorsturen naar workitems in Monday.com. Dit zorgt wel voor een minimale opvolging, maar er ontbreekt een overzichtelijk en gecentraliseerd proces voor het beheren en evalueren van firewallregels. Hierdoor heeft het team beperkt inzicht in de configuratie, is het moeilijk om wijzigingen bij te houden en kunnen incidenten niet altijd snel of consistent worden afgehandeld.
+Hoewel de meeste securityregels en de basisconfiguratie van de firewall recent opnieuw zijn opgezet, wordt de verwerking en opvolging van deze informatie nog niet systematisch uitgevoerd. \textit{De huidige workflow is grotendeels gebaseerd op scenario’s in Make die incidenten of alerts doorsturen naar workitems in Monday.com.} Dit zorgt wel voor een minimale opvolging, maar er ontbreekt een overzichtelijk en gecentraliseerd proces voor het beheren en evalueren van firewallregels. Hierdoor heeft het team beperkt inzicht in de configuratie, is het moeilijk om wijzigingen bij te houden en kunnen incidenten niet altijd snel of consistent worden afgehandeld.
 
 Er is daarom een duidelijke nood aan een beter gestructureerd proces voor firewallconfiguraties en securityregels. Idealiter worden alle regels, alerts en incidenten op een centrale plek verzameld en op een overzichtelijke manier gepresenteerd, zodat belanghebbenden een duidelijk beeld hebben van de configuratie en de status van incidenten. Dit zorgt ervoor dat belangrijke informatie niet over het hoofd wordt gezien, prioriteiten helder zijn en acties efficiënt kunnen worden opgevolgd. Hoewel in dit proof-of-concept niet wordt voorzien in het direct aanpassen van de configuratie, kan het verbeteren van inzicht en overzicht de reactietijd bij incidenten verkorten en de monitoring en opvolging binnen het securityproces van Devinity heel wat verbeteren.
 
+%% -----------------------------------
 
-
-%TODO
 \section{Verspreiding van tools en gebrek aan centralisatie}
-Een bijkomend probleem is de sterke verspreiding van tools binnen de infrastructuur. Monitoring, logging, security en incidentopvolging gebeuren elk in verschillende systemen, vaak zonder directe koppeling tussen elkaar.
+\textit{Een kernprobleem binnen Devinity is de verspreiding van tools binnen de infrastructuur.} Monitoring, logging, security en incidentopvolging vinden momenteel plaats in verschillende systemen, waaronder New Relic, de Azure Portal en Monday.com, vaak zonder directe koppeling tussen deze platformen. Elk systeem vervult zijn eigen rol, maar er is geen overkoepelende integratie die alle informatie samenbrengt in één geheel. \textit{Dit gebrek aan centralisatie vormt het belangrijkste aandachtspunt binnen deze bachelorproef en zal verder onderzocht worden met als doel een meer geïntegreerde en overzichtelijke aanpak uit te werken.}
 
-Dit gebrek aan centralisatie zorgt ervoor dat informatie gefragmenteerd is. Hierdoor kost het meer tijd om een volledig beeld te krijgen van een situatie, en neemt de kans toe dat belangrijke signalen gemist worden. Het ontbreken van één centraal dashboard of platform bemoeilijkt zowel dagelijkse opvolging als diepgaandere analyses.
+Door het gebrek aan centralisatie zorg er ook voor dat het meer tijd kost om een volledig beeld te krijgen van een situatie, aangezien gegevens deels manueel moeten worden samengebracht uit verschillende tools. Dit maakt het moeilijker om een duidelijk beeld te vormen van gebeurtenissen en om logs en meldingen correct te interpreteren binnen hun context. Bovendien zijn de belangrijke signalen dan ook niet onmiddellijk zichtbaar binnen het kader van de andere relevante informatie.
 
-%TODO
+Daarnaast maakt het ontbreken van één centraal dashboard of platform zowel de dagelijkse opvolging als analyses ingewikkelder. Het team moeten schakelen tussen verschillende tools om inzicht te krijgen in de status van systemen en incidenten, wat inefficiënt is en kan leiden tot vertragingen in het trekken van conclusies. Ook is er weinig uniformiteit in hoe informatie wordt weergegeven en geïnterpreteerd, wat het moeilijker maakt om snel en consistent te reageren op problemen.
+
+Deze verspreiding heeft ook een impact op de algemene securitystrategie. \textit{Doordat er geen centraal overzicht bestaat, blijft de aanpak opnieuw grotendeels afhankelijk van individuele tools en workflows.} Er is nood aan een oplossing die deze verschillende bronnen samenbrengt en informatie op een gestructureerde en overzichtelijke manier presenteert. Dit zou niet alleen de efficiëntie verhogen, maar ook bijdragen aan een beter inzicht in de volledige securitycontext en een snellere, meer consistente opvolging van incidenten.
+
+%% -----------------------------------
+
 \section{Huidige aanpak van incident response}
-De huidige aanpak van incident response is voornamelijk reactief. Wanneer een probleem zich voordoet, wordt dit geregistreerd en opgevolgd via tools zoals Monday.com. Er is echter nog geen geautomatiseerd systeem dat proactief bedreigingen detecteert en hierop reageert.
+\textit{De huidige aanpak van incident response binnen Devinity is voornamelijk reactief.} Wanneer zich een probleem voordoet, wordt dit geregistreerd en opgevolgd via tools zoals Monday.com, vaak op basis van meldingen die vanuit andere systemen worden doorgestuurd. Deze werkwijze zorgt ervoor dat incidenten wel opgevolgd worden, maar pas nadat ze zich hebben voorgedaan. Er is momenteel geen geautomatiseerd systeem dat proactief bedreigingen detecteert of automatisch acties onderneemt om incidenten te beperken of te voorkomen.
 
-Daarnaast ontbreekt een duidelijk uitgewerkt plan van aanpak voor incident response. Er zijn geen gestandaardiseerde procedures of workflows die beschrijven hoe met verschillende types incidenten moet worden omgegaan. Dit kan leiden tot inconsistente reacties en een langere responstijd.
+Daarnaast ontbreekt een duidelijk uitgewerkt plan van aanpak voor incident response. Er zijn geen gestandaardiseerde procedures of workflows die beschrijven hoe met verschillende types incidenten moet worden omgegaan. Hierdoor hangt de aanpak vaak af van de persoon die dat specifieke incident behandelt, wat kan leiden tot inconsistentie en een minder efficiënte opvolging.
 
-%TODO
+Het ontbreken van een gestructureerde en proactieve aanpak heeft als gevolg dat incidenten niet altijd op een uniforme en tijdige manier kunnen worden behandeld. Bovendien is het moeilijk om lessen te trekken uit eerdere incidenten, aangezien er geen vast proces is om deze systematisch te analyseren en te documenteren. Ook wordt er momenteel geen overzichtelijke rapportage gegenereerd wanneer een incident of verdachte situatie zich voordoet, waardoor het moeilijk is om achteraf een volledig beeld te krijgen van wat er precies is gebeurd. Dit beperkt de mogelijkheid om de incident response in de toekomst te verbeteren en beter voorbereid te zijn op gelijkaardige situaties.
+
+%% -----------------------------------
+
 \section{Probleemstelling}
-Op basis van de analyse kunnen de belangrijkste problemen als volgt samengevat worden:
+Op basis van de voorgaande analyse, waaronder observaties en feedback van de developers binnen het bedrijf, kunnen de belangrijkste problemen binnen Devinity als volgt worden samengevat:
 
-De huidige omgeving beschikt over verschillende tools, maar deze zijn niet geïntegreerd, wat leidt tot een gebrek aan overzicht. Logging en monitoring worden nog niet systematisch aangepakt, waardoor het moeilijk is om problemen tijdig te detecteren. De configuratie van de firewall is complex en niet eenduidig, wat risico’s met zich meebrengt op zowel security- als functioneel vlak. Daarnaast is de incident response voornamelijk reactief en ontbreekt een duidelijke, gestandaardiseerde aanpak.
+\begin{itemize}
+    \item De huidige omgeving maakt gebruik van verschillende tools voor monitoring, logging, security en incidentopvolging, maar deze zijn onvoldoende geïntegreerd. Dit leidt tot een gebrek aan overzicht en maakt het moeilijk om een volledig beeld te krijgen bij incidenten of verdachte activiteiten. Logging en monitoring worden bovendien nog niet systematisch uitgevoerd, waardoor potentiële risico’s vaak onopgemerkt blijven.
+    
+    \item De configuratie van de firewall is complex en inconsistent, waardoor het moeilijk is om een efficiënte en veilige configuratie te garanderen. Dit brengt zowel securityrisico’s als functionele risico’s met zich mee.
+    
+    \item De huidige aanpak van incident response is voornamelijk reactief en er ontbreekt een duidelijke, gestandaardiseerde werkwijze voor het behandelen en opvolgen van incidenten.
+    
+    \item \textit{Door deze factoren is het moeilijk om snel en efficiënt te reageren op securityproblemen, en bestaat het risico dat belangrijke signalen niet tijdig worden opgemerkt of correct geïnterpreteerd.} Dit benadrukt de nood aan een geïntegreerde en gestructureerde aanpak voor security monitoring en incident response.
+\end{itemize}
 
-%TODO
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[
+        node distance=2.5cm,
+        every node/.style={draw, rectangle, align=center, minimum width=3cm, minimum height=1cm},
+        arrow/.style={->, thick}
+        ]
+        
+        % Top layer: Sources
+        \node (app1) {Backend/API};
+        \node (app2) [right of=app1, xshift=2cm] {Frontend/API};
+        \node (app3) [right of=app2, xshift=2cm] {SaaS Integratie \\ (bv. Heroku)};
+        
+        % Middle layer: Tools
+        \node (nr) [below of=app1, yshift=-0.6cm] {\textit{New Relic} \\ (Monitoring)};
+        \node (waf) [below of=app2, yshift=-0.6cm] {\textit{Azure WAF} \\ (Firewall)};
+        \node (m365) [below of=app3, yshift=-0.6cm] {\textit{M365 Defende}r \\ (Email Alerts)};
+        
+        % Make layer
+        \node (make) [below of=waf, yshift=-0.6cm] {\textit{Make} \\ (Automatisatie)};
+        
+        % Monday layer
+        \node (monday) [below of=make, yshift=-0.6cm] {\textit{Monday.com} \\ (Incident Tracking)};
+        
+        % Arrows from sources to tools (verspreid)
+        \draw[arrow] (app1) -- (nr);
+        \draw[arrow] (app2) -- (waf);
+        \draw[arrow] (app3) -- (m365);
+        
+        % Extra "kruisende" relaties om versnippering te tonen
+        \draw[arrow, dashed] (app1) -- (waf);
+        \draw[arrow, dashed] (app2) -- (nr);
+        
+        % Arrows to Make (niet alles is gekoppeld)
+        \draw[arrow] (nr) -- (make);
+        \draw[arrow] (waf) -- (make);
+        
+        % Arrow to Monday
+        \draw[arrow] (make) -- (monday);
+    \end{tikzpicture}
+    \caption{Versnippering van tools en gebrek aan centralisatie binnen de huidige infrastructuur van Devinity}
+\end{figure}
+
+%% -----------------------------------
+
 \section{Conclusie}
-De analyse toont aan dat er nood is aan een meer gestructureerde en geïntegreerde aanpak voor security monitoring en incident response. Een centraal systeem dat logs verzamelt, analyseert en correleert, gecombineerd met geautomatiseerde detectie en respons, kan deze knelpunten aanpakken.
+De analyse toont duidelijk aan dat er binnen Devinity behoefte is aan een meer gestructureerde en geïntegreerde aanpak voor security monitoring en incident response. De huidige verspreiding van tools, het ontbreken van systematische logging en monitoring, de complexiteit van firewallconfiguraties en de reactieve incident response zijn enkele duidelijke factoren die de noodzaak voor verbeteringen benadrukken. 
 
-Deze probleemanalyse vormt de basis voor het verdere ontwerp van een oplossing die beter aansluit bij de noden van Devinity en die schaalbaar is binnen hun DevOps-omgeving.
+Een centraal systeem dat logs verzamelt en overzichtelijk presenteert, gecombineerd met geautomatiseerde detectie en respons, kan een groot deel van deze knelpunten aanpakken. Het systeem hoeft niet alle acties automatisch uit te voeren, maar moet vooral zorgen voor duidelijk inzicht, overzicht en een consistente opvolging van incidenten, zodat het hele proces binnen het bedrijf gestroomlijnd wordt en de efficiëntie en helderheid voor het team verbeteren.
+
+Deze probleemanalyse vormt daarmee de basis voor het ontwerp van een oplossing die beter aansluit bij de specifieke benodigdheden van Devinity en die schaalbaar is binnen hun DevOps-omgeving, zodat monitoring, incident response en securitybeheer efficiënter en betrouwbaarder kunnen verlopen.
