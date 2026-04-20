@@ -1,2 +1,92 @@
-\chapter{Proof-of-concept ontwikkeling}%
+\chapter{Fase 3: Proof-of-concept ontwikkeling}
 \label{ch:proof-of-concept ontwikkeling}
+
+\section{Inleiding}
+Op basis van het architectuurontwerp uit de vorige fase wordt in deze fase het effectieve proof-of-concept uitgewerkt. Het doel is niet om een productierijp systeem te bouwen, maar om de architectuurprincipes concreet te valideren aan de hand van een werkend prototype. Daarbij worden de kernfuncties uit het ontwerp stapsgewijs geïmplementeerd: logverzameling vanuit de Azure WAF, initiële filtering via Make, centrale opslag en analyse in Azure Log Analytics, visualisatie via Azure Monitor Workbooks en geautomatiseerde incident response via Monday.com.
+
+De implementatie verloopt in een testomgeving binnen de Azure portal van het bedrijf en maakt gebruik van gesimuleerde data en ongevoelige logdata om realistische scenario's te kunnen nabootsen zonder afhankelijk te zijn van productiedata. Dit laat toe om de werking van het systeem te valideren op een gecontroleerde en herhaalbare manier.
+
+%% -----------------------------------
+
+\section{Testdata en simulatiescenario's}
+Voordat de technische implementatie wordt beschreven, is het nuttig om stil te staan bij de data die gebruikt wordt om het systeem te testen. Omdat het proof-of-concept werkt binnen een testomgeving, worden twee soorten data ingezet: enerzijds gesimuleerde events die doelbewust worden gegenereerd om specifieke scenario's na te bootsen, anderzijds ongevoelige logdata uit bestaande testomgevingen die een realistisch beeld geven van het normale verkeerspatroon.
+
+De gesimuleerde testdata omvat onder meer authenticatielogs met mislukte inlogpogingen, auditlogs van configuratiewijzigingen, API-events met afwijkende aanroeppatronen en WAF-blokkeringsevents die overeenkomen met gekende aanvalspatronen zoals SQL-injectie of cross-site scripting. Door deze events doelbewust te genereren, kan worden nagegaan of het systeem de juiste detectieregels triggert en of de verdere verwerking correct verloopt.
+
+Deze aanpak maakt het mogelijk om zowel de regelgebaseerde detectie als de eenvoudige anomaly-detectie te valideren zonder te moeten wachten op reële incidenten. Tegelijk geeft de combinatie van gesimuleerde en reële testdata een breder beeld van hoe het systeem zich gedraagt onder verschillende omstandigheden.
+
+%% -----------------------------------
+
+\section{Laag 1 tot Laag 2: Logverzameling en ingestie via Make}
+
+\subsection{Ontsluiting van WAF-logdata}
+De eerste stap in de implementatie bestaat uit het toegankelijk maken van de WAF-logdata voor verdere verwerking. De Azure WAF is geconfigureerd om diagnostische logs door te sturen naar een Azure Log Analytics Workspace. Dit gebeurt via de diagnostische instellingen in Azure Monitor, waarbij de logcategorieën \texttt{ApplicationGatewayAccessLog} en \texttt{ApplicationGatewayFirewallLog} worden ingeschakeld. De firewall logs bevatten onder meer informatie over geblokkeerde verzoeken, de bijbehorende regelidentificatoren en het bronIP-adres, wat ze bijzonder relevant maakt voor security monitoring.
+
+Naast de rechtstreekse doorstuur naar Log Analytics wordt Make ingezet als ingestielaag voor events die een directe opvolging vereisen. Hiervoor wordt een webhook-endpoint geconfigureerd in Make, dat als ontvangstpunt dient voor notificaties vanuit Azure.
+
+\subsection{Make-scenario: ingestie en filtering}
+Binnen Make wordt een scenario opgezet dat binnenkomende WAF-events opvangt via de webhook en vervolgens een eerste filtering toepast. Enkel events met een hoge ernst of die overeenkomen met vooraf gedefinieerde criteria worden doorgestuurd voor verdere verwerking. Denk hierbij aan blokkeringsacties die een bepaalde frequentiedrempel overschrijden of events die gekoppeld zijn aan specifieke regelgroepen zoals SQL-injectie of remote code execution.
+
+De filtering in Make is bewust eenvoudig gehouden. Het scenario evalueert een beperkt aantal velden uit het binnenkomende event, zoals de actie (\texttt{Block} of \texttt{Detect}), de regelidentificator en het bronIP-adres. Op basis daarvan wordt beslist of het event wordt doorgestuurd naar Azure Log Analytics voor verdere analyse, dan wel genegeerd wordt als niet relevant.
+
+%% -----------------------------------
+
+\section{Laag 3: Centrale verwerking in Azure Log Analytics}
+
+\subsection{Opslag en normalisatie}
+Alle gefilterde events komen binnen in de Azure Log Analytics Workspace, waar ze worden opgeslagen in een gestructureerde tabel. Omdat de WAF-logs een vast schema hebben, is de normalisatiestap in dit proof-of-concept relatief beperkt. Toch wordt een basisnormalisatie toegepast waarbij relevante velden worden hernoemd en gestandaardiseerd naar een gemeenschappelijk schema. Dit schema bevat onder meer de velden \texttt{tijdstip}, \texttt{bron}, \texttt{eventtype}, \texttt{ernst}, \texttt{bronIP} en \texttt{regelID}, zodat de data consistent bevraagd kan worden ongeacht de oorspronkelijke bronstructuur.
+
+Deze normalisatie wordt deels uitgevoerd via transformatieregels in de Data Collection Rule van Azure Monitor, en deels via afgeleide velden in de KQL-query's die gebruikt worden voor analyse en detectie.
+
+\subsection{Regelgebaseerde detectie}
+De eerste vorm van detectie steunt op vooraf gedefinieerde regels die worden uitgedrukt als KQL-query's\footnote{Kusto Query Language (KQL) is de querytaal die gebruikt wordt binnen Azure Log Analytics en Azure Monitor.} binnen Azure Log Analytics. Deze regels evalueren de binnenkomende events op basis van gekende patronen en drempelwaarden.
+
+Een eerste regel detecteert herhaalde blokkeringsacties vanuit hetzelfde IP-adres binnen een kort tijdsvenster. Wanneer een IP-adres binnen een periode van tien minuten meer dan een ingesteld aantal keer geblokkeerd wordt, wordt dit beschouwd als een potentiële aanval en wordt een alert gegenereerd. Een tweede regel controleert of er blokkeringsevents zijn die overeenkomen met hoog-risico regelgroepen zoals \texttt{SQLI} of \texttt{RCE}, ongeacht de frequentie. Een derde regel detecteert een plotse stijging in het totale aantal geblokkeerde verzoeken ten opzichte van het historische gemiddelde, wat kan wijzen op een lopende aanval of een configuratieprobleem.
+
+Deze regels worden geïmplementeerd als \textit{Scheduled Query Rules} binnen Azure Monitor Alerts, zodat ze op regelmatige basis worden uitgevoerd en automatisch een alert aanmaken wanneer aan de voorwaarden wordt voldaan.
+
+\subsection{Eenvoudige anomaly-detectie}
+Naast de regelgebaseerde detectie wordt een eenvoudige vorm van anomaly-detectie toegevoegd als aanvulling. Het doel hiervan is niet om complexe machine learning-modellen te bouwen, maar om afwijkingen te detecteren die buiten het normale verkeerspatroon vallen en die niet noodzakelijk door vaste regels worden opgepikt.
+
+Concreet wordt hiervoor gebruik gemaakt van de ingebouwde statistische functies van KQL. Een query berekent voor elk uur van de dag het gemiddelde aantal WAF-events op basis van historische data, en vergelijkt dit met het actuele volume. Wanneer het actuele volume significant afwijkt van het verwachte gemiddelde, wordt dit als anomalie gemarkeerd. Deze aanpak is bewust eenvoudig gehouden en sluit aan bij de scope van het proof-of-concept, maar legt wel de basis voor een meer geavanceerde detectielaag in een latere fase.
+
+%% -----------------------------------
+
+\section{Visualisatie via Azure Monitor Workbooks}
+Om de verzamelde en geanalyseerde data inzichtelijk te maken, worden Azure Monitor Workbooks ingezet als visualisatielaag. Er wordt een dashboard opgebouwd dat de voornaamste securityinformatie op een overzichtelijke manier presenteert aan de betrokkenen binnen Devinity.
+
+Het dashboard bevat een overzicht van het totale aantal WAF-events over een instelbare tijdsperiode, uitgesplitst naar actietype (geblokkeerd of gedetecteerd). Daarnaast wordt een geografische spreiding van bronIP-adressen getoond, samen met een rangschikking van de meest getriggerde regelgroepen. Een apart paneel toont de actieve alerts en hun status, zodat de opvolging van incidenten direct vanuit het dashboard kan worden opgevolgd.
+
+Een tweede werkboek is gericht op historische analyse en biedt de mogelijkheid om trends over langere periodes te bekijken. Dit laat toe om patronen te herkennen die op korte termijn niet zichtbaar zijn, zoals een geleidelijke toename van bepaalde aanvalstypen of een verschuiving in het verkeerspatroon.
+
+%% -----------------------------------
+
+\section{Incident response via Make en Monday.com}
+Wanneer een alert wordt gegenereerd in Azure Monitor, wordt via een webhook een nieuw Make-scenario getriggerd dat instaat voor de geautomatiseerde incident response. Dit scenario verwerkt de alertdata en maakt op basis daarvan een workitem aan in Monday.com.
+
+Het aangemaakte workitem bevat de voornaamste contextinformatie uit de alert: het type incident, het tijdstip van detectie, het betrokken IP-adres of de betrokken regelgroep, en een directe verwijzing naar de relevante logs in Azure Log Analytics. Op die manier beschikt de verantwoordelijke meteen over de nodige informatie om het incident verder op te volgen, zonder zelf de logs te moeten raadplegen.
+
+De koppeling tussen Azure Monitor en Make verloopt via een Action Group in Azure Monitor, die bij het aanmaken van een alert automatisch een HTTP-verzoek stuurt naar het webhook-endpoint van het Make-scenario. Dit maakt de incident response volledig geautomatiseerd en ontkoppeld van manuele tussenkomst, wat aansluit bij de doelstelling om de responstijd te verkorten en de consistentie van de opvolging te verbeteren.
+
+%% -----------------------------------
+
+\section{Overzicht van de geïmplementeerde componenten}
+De implementatie omvat de volgende componenten, die samen het werkende proof-of-concept vormen:
+
+\begin{itemize}
+    \item Azure WAF met geconfigureerde diagnostische instellingen voor het doorsturen van firewall- en toegangslogs
+    \item Azure Log Analytics Workspace als centraal opslagplatform voor genormaliseerde securitydata
+    \item Data Collection Rule met transformatieregels voor basisnormalisatie van binnenkomende events
+    \item KQL-query's voor regelgebaseerde detectie en eenvoudige anomaly-detectie
+    \item Scheduled Query Rules in Azure Monitor Alerts voor geautomatiseerde detectie op regelmatige basis
+    \item Azure Monitor Workbooks met een operationeel dashboard en een historisch analysedashboard
+    \item Make-scenario voor ingestie en initiële filtering van WAF-events via webhook
+    \item Make-scenario voor geautomatiseerde aanmaak van workitems in Monday.com bij het triggeren van een alert
+\end{itemize}
+
+%% -----------------------------------
+
+\section{Conclusie}
+Het proof-of-concept toont aan dat de principes uit het architectuurontwerp effectief kunnen worden omgezet naar een werkend systeem. De combinatie van Azure Log Analytics voor centrale opslag en analyse, Make voor ingestie en incident response, en Azure Monitor Workbooks voor visualisatie biedt een coherente en uitbreidbare oplossing die aansluit bij de noden van Devinity.
+
+De implementatie beperkt zich bewust tot de Azure WAF als databron en maakt gebruik van gesimuleerde testdata, maar de opzet is generiek genoeg om in een volgende fase uitgebreid te worden met bijkomende bronnen en meer geavanceerde detectiemechanismen. In het volgende hoofdstuk worden de resultaten van het proof-of-concept geëvalueerd aan de hand van de vooraf gedefinieerde doelstellingen en KPI's.

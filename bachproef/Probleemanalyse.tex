@@ -15,7 +15,7 @@ Binnen Devinity wordt gebruikgemaakt van verschillende tools voor monitoring, se
 New Relic kan het best omschreven worden als een AI-powered `observability`-platform dat belanghebbenden helpt bij het plannen, implementeren en draaiende houden van software. Eén van de kernfuncties van dit platform is het centraal verzamelen en analyseren van logs en metrics afkomstig uit verschillende onderdelen van de infrastructuur. Hierdoor kunnen developers en analisten real-time inzicht krijgen in het gedrag van de applicaties en kunnen afwijkingen snel worden opgemerkt via alerts en dashboards, waardoor potentiële problemen geïdentificeerd kunnen worden. Binnen het bedrijf wordt er momenteel echter niet optimaal gebruikgemaakt van deze mogelijkheden. Veel functionaliteiten van New Relic blijven onbenut en de verzamelde data wordt momenteel nog niet ingezet voor een proactieve monitoringstrategie.
 
 \subsection{Make}
-Make wordt binnen de organisatie ingezet als automatisatietool om verschillende systemen met elkaar te verbinden en specifieke taken binnen het kader van security incident management te vereenvoudigen. Via deze tool kunnen gebeurtenissen, zoals fouten of verdachte activiteiten, automatisch worden gedetecteerd en doorgezonden. Op basis van vooraf gedefinieerde scenario’s kunnen meldingen worden gegenereerd en incidenten worden geregistreerd om volgende stappen op te kunnen starten. Hierdoor ondersteunt Make het sneller signaleren en opvolgen van potentiële incidenten, al gebeurt dit momenteel eerder op basis van losse automatisaties dan binnen een volledig geïntegreerde securitystrategie. Via deze tool worden scenario’s opgezet die acties uitvoeren op basis van specifieke triggers. Enkele voorbeelden hiervan binnen het bedrijf zijn: 
+Make wordt binnen de organisatie ingezet als automatisatietool om verschillende systemen met elkaar te verbinden en specifieke taken binnen het kader van security incident management te vereenvoudigen. Via deze tool kunnen gebeurtenissen, zoals fouten of verdachte activiteiten, automatisch worden doorgezonden vanuit andere applicaties om daarna verder te verwerken. Op basis van vooraf gedefinieerde scenario’s kunnen meldingen worden gegenereerd en incidenten worden geregistreerd om volgende stappen op te kunnen starten. Hierdoor ondersteunt Make het sneller signaleren en opvolgen van potentiële incidenten, al gebeurt dit momenteel eerder op basis van losse automatisaties dan binnen een volledig geïntegreerde securitystrategie. Via deze tool worden scenario’s opgezet die acties uitvoeren op basis van specifieke triggers. Enkele voorbeelden hiervan binnen het bedrijf zijn: 
 
 \begin{itemize}
     \item Het versturen van notificaties bij herhaalde verwerkingsfouten binnen kritische processen
@@ -108,15 +108,15 @@ Op basis van de voorgaande analyse, waaronder observaties en feedback van de dev
         % Top layer: Sources
         \node (app1) {Backend/API};
         \node (app2) [right of=app1, xshift=2cm] {Frontend/API};
-        \node (app3) [right of=app2, xshift=2cm] {SaaS Integratie \\ (bv. Heroku)};
         
         % Middle layer: Tools
         \node (nr) [below of=app1, yshift=-0.6cm] {\textit{New Relic} \\ (Monitoring)};
         \node (waf) [below of=app2, yshift=-0.6cm] {\textit{Azure WAF} \\ (Firewall)};
-        \node (m365) [below of=app3, yshift=-0.6cm] {\textit{M365 Defende}r \\ (Email Alerts)};
+        \node (app3) [right of=waf, xshift=2cm] {SaaS Integratie \\ (bv. Heroku)};
         
         % Make layer
         \node (make) [below of=waf, yshift=-0.6cm] {\textit{Make} \\ (Automatisatie)};
+        \node (m365) [right of=make, xshift=2cm] {\textit{M365 Defende}r \\ (Email Alerts)};
         
         % Monday layer
         \node (monday) [below of=make, yshift=-0.6cm] {\textit{Monday.com} \\ (Incident Tracking)};
@@ -124,7 +124,7 @@ Op basis van de voorgaande analyse, waaronder observaties en feedback van de dev
         % Arrows from sources to tools (verspreid)
         \draw[arrow] (app1) -- (nr);
         \draw[arrow] (app2) -- (waf);
-        \draw[arrow] (app3) -- (m365);
+        \draw[arrow] (app3) -- (make);
         
         % Extra "kruisende" relaties om versnippering te tonen
         \draw[arrow, dashed] (app1) -- (waf);
@@ -133,9 +133,11 @@ Op basis van de voorgaande analyse, waaronder observaties en feedback van de dev
         % Arrows to Make (niet alles is gekoppeld)
         \draw[arrow] (nr) -- (make);
         \draw[arrow] (waf) -- (make);
+        \draw[arrow] (waf) -- (nr);
         
-        % Arrow to Monday
+        % Arrows from make
         \draw[arrow] (make) -- (monday);
+        \draw[arrow] (make) -- (m365);
     \end{tikzpicture}
     \caption{Versnippering van tools en gebrek aan centralisatie binnen de huidige infrastructuur van Devinity}
 \end{figure}
