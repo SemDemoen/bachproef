@@ -4,7 +4,7 @@
 \section{Inleiding}
 In deze fase wordt de huidige situatie binnen Devinity geanalyseerd met betrekking tot security monitoring en incident response in hun SaaS-omgevingen. Het doel van deze analyse is om inzicht te krijgen in de bestaande infrastructuur, gebruikte tools en de belangrijkste knelpunten. Op basis hiervan kan in latere fases een gericht en haalbaar ontwerp worden uitgewerkt.
 
-De informatie in deze probleemanalyse is verzameld via observaties, gesprekken met collega’s en een eerste verkenning van beschikbare logs en systemen.
+De informatie in deze probleemanalyse is verzameld via observaties, gesprekken met collega's en een eerste verkenning van beschikbare logs en systemen. Bij het uitwerken van een oplossing staat niet het vervangen van de bestaande omgeving centraal, maar wel het zo weinig mogelijk ingrijpend verbeteren van wat er al is. Ontwerpkeuzes worden daarom bewust afgestemd op de huidige workflow en infrastructuur van Devinity, zodat de oplossing haalbaar blijft en de dagelijkse werking zo min mogelijk wordt verstoord.
 
 %% -----------------------------------
 
@@ -25,7 +25,7 @@ Make wordt binnen de organisatie ingezet als automatisatietool om verschillende 
     \item Het automatisch aanmaken van workitems binnen Monday.com voor de opvolging van incidenten
 \end{itemize}
 
-Hoewel Make op deze manier bijdraagt aan een efficiëntere en deels geautomatiseerde opvolging van processen, wordt het momenteel vooral gebruikt voor losse workflows en nog niet als onderdeel van een samenhangende, geïntegreerde security- en monitoringstrategie.
+Hoewel Make op deze manier bijdraagt aan een efficiëntere en deels geautomatiseerde opvolging van processen, biedt het nog geen volledig geïntegreerd kader voor security en monitoring.
 
 \subsection{Monday.com}
 Voor incidentopvolging wordt \textit{Monday.com} gebruikt. Monday.com is een cloudgebaseerd en visueel platform voor werkbeheer dat voornamelijk wordt gebruikt voor het plannen en organiseren van activiteiten en taken. Binnen Devinity wordt het platform, naast de gebruikelijke opvolging van projecten, specifiek ingezet om incidenten te registreren en op te volgen. Wanneer zich een probleem voordoet, worden \textit{via een scenario binnen Make} automatisch workitems aangemaakt, zodat het team op de hoogte wordt gebracht en het incident verder kan worden opgevolgd. Deze aanpak is voornamelijk \textit{reactief}: acties worden pas ondernomen nadat een incident zich heeft voorgedaan en geregistreerd is in het systeem. Hoewel dit zorgt voor een opvolging van incidenten en een overzicht van openstaande workitems, ontbreekt momenteel een proactief onderdeel dat incidenten vroegtijdig signaleert of automatisch corrigerende maatregelen opstart. Hierdoor ligt de nadruk nog sterk op het registreren en volgen van problemen, in plaats van op het voorkomen of snel mitigeren ervan.
@@ -150,3 +150,5 @@ De analyse toont duidelijk aan dat er binnen Devinity behoefte is aan een meer g
 Een centraal systeem dat logs verzamelt en overzichtelijk presenteert, gecombineerd met geautomatiseerde detectie en respons, kan een groot deel van deze knelpunten aanpakken. Het systeem hoeft niet alle acties automatisch uit te voeren, maar moet vooral zorgen voor duidelijk inzicht, overzicht en een consistente opvolging van incidenten, zodat het hele proces binnen het bedrijf gestroomlijnd wordt en de efficiëntie en helderheid voor het team verbeteren.
 
 Deze probleemanalyse vormt daarmee de basis voor het ontwerp van een oplossing die beter aansluit bij de specifieke benodigdheden van Devinity en die schaalbaar is binnen hun DevOps-omgeving, zodat monitoring, incident response en securitybeheer efficiënter en betrouwbaarder kunnen verlopen.
+
+Daarbij wordt nadrukkelijk gekozen voor een aanpak die de bestaande infrastructuur en werkwijze respecteert: het doel is niet om alles te vervangen, maar om op een zo min mogelijk ingrijpende manier te bouwen op wat er al aanwezig is. Zo blijft de oplossing realistisch implementeerbaar binnen de DevOps-omgeving van Devinity en wordt de dagelijkse werking van het team zo weinig mogelijk verstoord.
