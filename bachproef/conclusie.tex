@@ -5,7 +5,7 @@
 \chapter{Conclusie}%
 \label{ch:conclusie}
 
-% TODO: Trek een duidelijke conclusie, in de vorm van een antwoord op de
+% Trek een duidelijke conclusie, in de vorm van een antwoord op de
 % onderzoeksvra(a)g(en). Wat was jouw bijdrage aan het onderzoeksdomein en
 % hoe biedt dit meerwaarde aan het vakgebied/doelgroep? 
 % Reflecteer kritisch over het resultaat. In Engelse teksten wordt deze sectie
@@ -14,5 +14,28 @@
 % Heeft het onderzoek geleid tot nieuwe vragen die uitnodigen tot verder 
 %onderzoek?
 
-\lipsum[76-80]
+\paragraph{Probleemstelling en context}
+De centrale onderzoeksvraag van deze bachelorproef luidde: hoe kan een geautomatiseerd systeem voor security monitoring en incident response worden ontworpen om securitydata binnen de SaaS-omgeving van Devinity effectief te centraliseren, analyseren en rapporteren in een DevOps-infrastructuur? Het antwoord op die vraag is uitgewerkt doorheen vier fasen en gevalideerd aan de hand van een werkend proof-of-concept.
+
+De probleemanalyse maakte duidelijk waar de moeilijkheden zich bevinden. Devinity werkt met een combinatie van tools die elk hun eigen rol vervullen maar niet met elkaar communiceren. Logs van de Azure WAF, meldingen vanuit Microsoft 365 Defender, workitems in monday.com en observabilitydata in New Relic staan los van elkaar. Er is geen plek waar al die informatie samenkomt, waardoor een volledig beeld van een incident manueel samengeraapt moet worden uit meerdere systemen. Detectie verloopt niet systematisch en de aanpak van incident response is voornamelijk reactief; er wordt pas gereageerd nadat een probleem zich heeft gemeld, niet daarvoor. Verder ontbreken meetpunten om te beoordelen of de aanpak eigenlijk werkt. Dat zijn niet de kenmerken van een goede securitystrategie, maar ze zijn ook herkenbaar voor veel bedrijven in een gelijkaardige groeifase.
+
+\paragraph{Bevindingen uit de literatuur}
+De literatuurstudie toonde aan dat dit geen uniek probleem is. De decentralisatie van netwerkarchitecturen brengt vanzelf meer complexiteit mee bij het beveiligen en monitoren van systemen, en de combinatie van preventieve en detectieve mechanismen is voor de meeste organisaties moeilijker te implementeren dan de theorie doet vermoeden. SIEM-systemen bieden daarvoor een conceptueel kader, maar de praktische implementatie ervan is complex en kostelijk. De principes van normalisatie, eventcorrelatie en gestructureerde incident response zijn echter wel toepasbaar binnen een beperktere scope, wat de basis vormt voor het architectuurontwerp in dit onderzoek.
+
+\paragraph{Architectuur en implementatie}
+De gelaagde architectuur die op basis van de probleemanalyse werd ontworpen, brengt die principes concreet in de praktijk. Make fungeert als ingestie- en filterlaag die events opvangt, verwerkt en routeert op basis van hun ernst. Azure Log Analytics vormt het centrale platform waar gefilterde en genormaliseerde events worden opgeslagen en beschikbaar zijn voor analyse via KQL. Azure Monitor Workbooks visualiseren de gecentraliseerde data in een operationeel overzicht. Monday.com en Outlook zorgen voor de geautomatiseerde incident response, waarbij de ernst van een event rechtstreeks bepaalt of een workitem wordt aangemaakt, een mail wordt verstuurd of alleen gelogd wordt. De bewuste keuze om de bestaande tools te integreren in plaats van te vervangen, maakt de oplossing haalbaar en houdt de impact op de dagelijkse werking van het team minimaal.
+
+\paragraph{Validatie via proof-of-concept}
+Het proof-of-concept valideert dat de architectuur in de praktijk werkt. Een gemiddelde detectietijd van 187 seconden, gegarandeerd binnen een venster van 300 seconden, vervangt een situatie zonder enige structurele detectie. Een gemiddelde responstijd van 23,9 seconden van trigger tot notificatie vervangt een werkwijze waarbij meldingen soms uren onopgemerkt bleven. Een filterratio van 98,5\% toont aan dat de meerstaps filteringstrategie het probleem van te brede en ongelezen meldingen effectief aanpakt: van 3\,857 ruwe events over vijf testrondes resulteerden er uiteindelijk 8 in een workitem en 2 in een e-mail.
+
+\paragraph{Beperkingen en afbakening}
+Toch zijn er grenzen aan wat dit proof-of-concept aantoont, en het is belangrijk die eerlijk te benoemen. De implementatie beperkt zich bewust tot de Azure WAF als databron en werkt met gesimuleerde testscenario's op de QA-omgeving. Die keuze maakt de resultaten reproduceerbaar en controleerbaar, maar de validiteit in een productieomgeving met reëel gebruikersverkeer is nog niet bewezen. De drempelwaarden in de Alert Rules zijn afgestemd op de testomgeving en zullen in productie bijgestuurd moeten worden op basis van het werkelijke verkeerspatroon. Of de filterratio van 98,5\% dan ook even hoog zal zijn, is onzeker. In productie zal er meer gegrond maar afwijkend verkeer zijn dat de drempelwaarden wél haalt. Correlatie tussen events uit verschillende databronnen, wat één van de kernsterktes is van een volwaardig SIEM-systeem, valt volledig buiten de huidige scope. Dat is geen tekortkoming van het ontwerp, maar een bewuste afbakening die in een volgende fase ingevuld moet worden.
+
+\paragraph{Aanbevelingen voor vervolgonderzoek}
+Die volgende fase heeft een duidelijk pad. De architectuur is generiek genoeg om bijkomende bronnen zoals New Relic-alerts of Microsoft 365 Defender-meldingen te integreren via een nieuw Make-scenario, zonder aanpassingen aan het centrale platform. Anomaliedetectie op basis van historische WAF-data is een logische uitbreiding die rule-based detectie aanvult met volumetrische patronen en zo een antwoord biedt op aanvallen die individuele drempelwaarden niet overschrijden. Het vastleggen van procedures voor hoe met gegenereerde workitems moet worden omgegaan, is een organisatorische stap die de technische winst ook operationeel tastbaar maakt. En een validatie op productiedata zou de bevindingen van dit proof-of-concept ofwel bevestigen ofwel bijsturen, wat in beide gevallen waardevolle inzichten oplevert.
+
+\paragraph{Slotbeschouwing}
+De bredere bijdrage van dit onderzoek aan het werkveld zit in de toepasbaarheid van de aanpak. Veel SaaS- en DevOps-gerichte bedrijven kampen met dezelfde problematiek als Devinity; tools die los van elkaar opereren, geen gecentraliseerd overzicht en een reactieve in plaats van proactieve houding ten opzichte van security. De architectuur die in deze bachelorproef is uitgewerkt, is niet gebonden aan één specifieke toolstack en kan als referentiekader dienen voor organisaties die hun security monitoring willen verbeteren zonder daarvoor een volledig nieuw platform aan te schaffen. Dat maakt de meerwaarde niet enkel theoretisch, maar ook praktisch toepasbaar.
+
+Wat dit onderzoek uiteindelijk aantoont, is dat een effectievere aanpak van security monitoring niet per se een grote investering vereist. Het gaat er in de eerste plaats om de beschikbare tools op een doordachte manier te laten samenwerken. Devinity maakte al gebruik van Make, Azure en monday.com. Het ontbrak aan de integratie, de filterlogica en de geautomatiseerde respons die die tools omvormen van losse onderdelen naar een werkend geheel. Dat geheel is nu gebouwd, gedocumenteerd en gevalideerd. Of het ook in productie even goed werkt als in de testomgeving, is de vraag die dit onderzoek openlaat en die uitnodigt tot verdere validatie.
 

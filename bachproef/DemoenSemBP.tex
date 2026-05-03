@@ -7,6 +7,10 @@
 
 \usepackage{lipsum} % For blind text, can be removed after adding actual content
 \usepackage{float}
+\usepackage{booktabs}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+
 
 %% Pictures to include in the text can be put in the graphics/ folder
 \graphicspath{{../graphics/}}
@@ -26,6 +30,44 @@
     breaklines,
     linenos,
     tabsize=4
+}
+
+\usepackage{listings}
+\usepackage{xcolor}
+
+\definecolor{kqlBlack}{HTML}{000000}
+\definecolor{kqlOrange}{HTML}{EF8767}
+\definecolor{kqlGray}{HTML}{C3BBAF}
+
+% KQL taal definiëren
+\lstdefinelanguage{KQL}{
+    keywords={
+        where, project, summarize, extend, join, union, let, by,
+        on, kind, ago, now, bin, count, sum, avg, min, max,
+        contains, startswith, endswith, has, in, between,
+        and, or, not, true, false, print, render, limit, top,
+        order, sort, asc, desc, distinct, mv-expand, parse,
+        datatable, range, ingestion_time, take
+    },
+    sensitive=false,
+    morestring=[b]",
+    morestring=[b]',
+    morecomment=[l]{//},
+}
+
+% Stijl instellen
+\lstdefinestyle{kqlstyle}{
+    language=KQL,
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{kqlOrange}\bfseries,
+    stringstyle=\color{kqlBlack},
+    commentstyle=\color{kqlGray}\itshape,
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    breaklines=true,
+    frame=single,
+    backgroundcolor=\color{gray!5},
+    captionpos=b,
 }
 
 %% Ensure the list of listings is in the table of contents
@@ -108,7 +150,7 @@
 
 \listoffigures
 
-% If you included tables and/or source code listings, uncomment the appropriate
+% If you included tables and/or source  listings, uncomment the appropriate
 % lines.
 \listoftables
 

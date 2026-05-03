@@ -1,2 +1,322 @@
-\chapter{Evaluatie}%
+\chapter{Fase 4: Evaluatie}
 \label{ch:evaluatie}
+
+\section{Inleiding}
+
+In de probleemanalyse werden een aantal concrete tekortkomingen vastgesteld in de manier waarop Devinity omgaat met security monitoring: tools staan los van elkaar, logging gebeurt niet systematisch, incidenten worden pas opgepikt nadat ze zich hebben voorgedaan en er zijn geen meetpunten om te beoordelen of de aanpak eigenlijk werkt. Op basis daarvan werd een architectuur uitgewerkt en een proof-of-concept gebouwd. Dit hoofdstuk gaat na in welke mate dat systeem de vastgestelde problemen effectief aanpakt.
+
+Daarvoor worden drie KPI's gebruikt die rechtstreeks gekoppeld zijn aan de probleemstelling: hoe snel worden events gedetecteerd, hoe lang duurt het voordat er een reactie volgt en in welke verhouding staan relevante meldingen tegenover ruis. Elke KPI wordt onderbouwd met metingen uit de testfase, waarbij gesimuleerde aanvalsscenario's op de QA-omgeving werden gebruikt. Na de bespreking per KPI worden de resultaten gekoppeld aan de deelvragen, gevolgd door aanbevelingen voor een productie-omgeving en een afsluitende conclusie.
+
+%% -----------------------------------
+
+\section{Evaluatie per KPI}
+
+\subsection{KPI 1: Detectiesnelheid}
+
+Vroeger was er binnen Devinity geen actief mechanisme dat WAF-blokkeringen oppikte en daar automatisch iets mee deed. Events belandden in de Azure-portal, in Microsoft 365 Defender of in monday.com, maar of iemand dat ook daadwerkelijk zag, hing volledig af van wanneer die persoon toevallig in het juiste systeem keek. Dat is geen betrouwbare manier van werken.
+
+Het proof-of-concept lost dit op met een Alert Rule in Azure Monitor die elke vijf minuten de \texttt{AGWFirewallLogs}-tabel bevraagt via KQL. Zodra er minstens één geblokkeerd event is, stuurt de gekoppelde Action Group een webhook naar Make. Een tweede regel, \texttt{Security-Error-Alert}, doet hetzelfde voor afwijkende HTTP-statuscodes op de \texttt{AGWAccessLogs}-tabel, maar triggert pas wanneer een combinatie van IP-adres en statuscode minstens twintig keer voorkomt binnen hetzelfde tijdsvenster.
+
+Tijdens de testfase werd de detectiesnelheid over tien scenario's gemeten door het tijdstip van het gesimuleerde event te vergelijken met het tijdstip waarop de Alert Rule triggerde. Tabel~\ref{tab:detectiesnelheid} toont de resultaten.
+
+\begin{table}[H]
+    \centering
+    \caption{Meetresultaten detectiesnelheid per testscenario (n\,=\,10)}
+    \label{tab:detectiesnelheid}
+    \small
+    \begin{tabular}{clllr}
+        \toprule
+        \textbf{Meting} & \textbf{Eventtype} & \textbf{Tijdstip event} & \textbf{Tijdstip trigger} & \textbf{Detectietijd (s)} \\
+        \midrule
+        1  & SQL-injectie (WAF block)      & 09:02:14 & 09:07:12 & 298 \\
+        2  & XSS-aanval (WAF block)        & 09:18:41 & 09:23:09 & 268 \\
+        3  & SQL-injectie (WAF block)      & 10:05:33 & 10:07:25 & 112     \\
+        4  & 404-flood (25$\times$ curl)   & 10:31:07 & 10:35:44 & 277 \\
+        5  & 404-flood (25$\times$ curl)   & 11:14:52 & 11:18:23 & 211  \\
+        6  & XSS-aanval (WAF block)        & 11:47:03 & 11:51:38 & 275 \\
+        7  & SQL-injectie (WAF block)      & 13:02:19 & 13:05:42 & 203  \\
+        8  & 404-flood (25$\times$ curl)   & 13:28:55 & 13:31:47 & 172 \\
+        9  & SQL-injectie (WAF block)      & 14:10:04 & 14:12:08 & 124  \\
+        10 & XSS-aanval (WAF block)        & 14:45:31 & 14:49:18 & 227  \\
+        \midrule
+        \multicolumn{4}{l}{\textit{Gemiddelde detectietijd}} & \textbf{187,s} \\
+        \multicolumn{4}{l}{\textit{Minimale detectietijd}}   & 112,s \\
+        \multicolumn{4}{l}{\textit{Maximale detectietijd}}   & 298,s \\
+        \multicolumn{4}{l}{\textit{Standaardafwijking}}      & $\pm$34,s \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+De variatie in detectietijd is logisch te verklaren: Azure Monitor evalueert de KQL-query om de vijf minuten op een vast ritme. Een event dat net na zo'n evaluatie optreedt, moet bijna de volledige 300 seconden wachten op de volgende cyclus. Een event dat vlak voor de cyclus valt, wordt meteen opgepikt. In alle tien de metingen bleef de detectietijd ruim binnen die 300 seconden, wat bevestigt dat de Alert Rule werkt zoals bedoeld. Figuur~\ref{fig:detectiesnelheid} zet de meetwaarden af tegen de 5-minutengrens en het gemiddelde.
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}
+        \begin{axis}[
+            width=\textwidth,
+            height=6cm,
+            xlabel={Meting},
+            ylabel={Detectietijd (s)},
+            xtick={1,2,3,4,5,6,7,8,9,10},
+            xticklabels={M1,M2,M3,M4,M5,M6,M7,M8,M9,M10},
+            ymin=60, ymax=340,
+            ymajorgrids=true,
+            grid style={dashed, gray!30},
+            mark=*,
+            mark size=2pt,
+            tick align=outside,
+            legend style={at={(0.98,0.95)}, anchor=north east, font=\small},
+            ]
+            \addplot[color=blue!70!black, thick, mark=*]
+            coordinates {
+                (1,298)(2,268)(3,112)(4,277)(5,211)
+                (6,275)(7,203)(8,172)(9,124)(10,227)
+            };
+            \addlegendentry{Detectietijd (s)}
+            
+            \addplot[color=red!70!black, dashed, thick, no marks]
+            coordinates {(1,300)(10,300)};
+            \addlegendentry{5-minutengrens (300,s)}
+            
+            \addplot[color=gray!60, densely dotted, thick, no marks]
+            coordinates {(1,187)(10,187)};
+            \addlegendentry{Gemiddelde (187,s)}
+        \end{axis}
+    \end{tikzpicture}
+    \caption{Detectietijd per meting ten opzichte van de 5-minutengrens (300,s) en het gemiddelde (187,s)}
+    \label{fig:detectiesnelheid}
+\end{figure}
+
+Ten opzichte van de situatie waarbij niemand actief de logs bewaakte, is een gegarandeerde detectie binnen vijf minuten een aanzienlijke verbetering. Vroeger hing alles af van of iemand toevallig op het juiste moment naar de logs keek, wat in de praktijk zelden op een systematische manier gebeurde. Met de huidige oplossing wordt elk verdacht event automatisch opgepikt en doorgestuurd, ongeacht het tijdstip of de werkdruk van het team.
+
+Het tijdsvenster van vijf minuten werd in deze proof-of-concept bewust gekozen vanwege het kredietlimiet van Make: hoe vaker het scenario wordt uitgevoerd, hoe meer credits het verbruikt. Een korter interval zou het beschikbare krediet sneller uitputten, wat voor een testfase niet wenselijk is. In een productieomgeving kan dit interval worden verkleind naar bijvoorbeeld één of twee minuten, mits de beschikbare resources en het gekozen Make-abonnement dit toelaten. Dit zou de detectietijd aanzienlijk verkorten en de oplossing nog dichter bij real-time monitoring brengen.
+
+%% -----------------------------------
+
+\subsection{KPI 2: Responstijd}
+
+Detectie alleen volstaat niet: even belangrijk is hoe snel er nadien actie wordt ondernomen. Vroeger was dat traject lang en onvoorspelbaar. Meldingen kwamen binnen via e-mail of monday.com, maar er was geen onderscheid op basis van de ernst van een event. Een kritische WAF-blokkering werd niet anders behandeld dan een generieke systeemfout, en hoe snel iemand reageerde hing af van wanneer die persoon toevallig zijn e-mail of monday.com-bord bekeek.
+
+Het systeem koppelt de respons rechtstreeks aan de severity die Make aan elk event toekent, waardoor de aanpak proportioneel blijft aan de ernst van de situatie. Alle events worden doorgestuurd naar Azure Log Analytics via de Logs Ingestion API en zijn vervolgens raadpleegbaar in het workbook, dat een centraal overzicht biedt van alle geregistreerde activiteit.
+
+Voor \textit{medium}-, \textit{high}- en \textit{critical}-events wordt automatisch een workitem aangemaakt in monday.com, met het tijdstip van het event, het bron-IP-adres en de bijhorende rule group. Zo beschikt de verantwoordelijke meteen over de nodige context om te handelen. Bij \textit{high}- en \textit{critical}-events wordt bovendien een e-mail verstuurd via Outlook, zodat die niet eerst monday.com hoeft te raadplegen maar proactief op de hoogte wordt gebracht van events die een snelle reactie vereisen. Tabel~\ref{tab:responstijd} splitst de responstijden op per stap.
+
+\begin{table}[H]
+    \centering
+    \caption{Opgesplitste responstijden per stap in de Make-pipeline (n\,=\,10)}
+    \label{tab:responstijd}
+    \small
+    \begin{tabular}{clrrrrc}
+        \toprule
+        \textbf{Meting} & \textbf{Severity} & \textbf{Alert to Make (s)} & \textbf{Make-verw. (s)} & \textbf{Item (s)} & \textbf{Mail (s)} & \textbf{Totaal (s)} \\
+        \midrule
+        1  & low      & 18 & 2 & —  & —  & 20 \\
+        2  & medium   & 8  & 1 & 4  & —  & 13 \\
+        3  & high     & 19 & 2 & 3  & 5  & 29 \\
+        4  & high     & 14 & 2 & 4  & 7  & 27 \\
+        5  & medium   & 15 & 3 & 4  & —  & 22 \\
+        6  & critical & 17 & 6 & 5  & 6  & 34 \\
+        7  & low      & 9  & 1 & —  & —  & 10 \\
+        8  & medium   & 19 & 2 & 3  & —  & 24 \\
+        9  & high     & 18 & 4 & 4  & 5  & 31 \\
+        10 & critical & 11 & 5 & 5  & 8  & 29 \\
+        \midrule
+        \multicolumn{3}{l}{\textit{Gem. totale responstijd}}       & \multicolumn{3}{r}{} & \textbf{23,9s} \\
+        \multicolumn{3}{l}{\textit{Gem. wachttijd Alert to Make}}  & \multicolumn{3}{r}{} & 14,8s \\
+        \multicolumn{3}{l}{\textit{Gem. Make-verwerkingstijd}}     & \multicolumn{3}{r}{} & 2,8s  \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}
+        \begin{axis}[
+            ybar stacked,
+            width=\textwidth,
+            height=7cm,
+            bar width=0.55cm,
+            xlabel={Meting},
+            ylabel={Tijd (s)},
+            xtick={1,2,3,4,5,6,7,8,9,10},
+            xticklabels={M1,M2,M3,M4,M5,M6,M7,M8,M9,M10},
+            ymin=0, ymax=60,
+            ymajorgrids=true,
+            grid style={dashed, gray!30},
+            legend style={
+                at={(0.5,-0.15)},
+                anchor=north,
+                legend columns=2,
+                font=\small
+            },
+            tick align=outside,
+            ]
+            \addplot[fill=teal!60, draw=teal!80!black]
+            coordinates {
+                (1,18)(2,8)(3,19)(4,14)(5,15)
+                (6,17)(7,9)(8,19)(9,18)(10,11)
+            };
+            \addlegendentry{Alert to Make}
+            
+            \addplot[fill=blue!60, draw=blue!80!black]
+            coordinates {
+                (1,2)(2,1)(3,2)(4,2)(5,3)
+                (6,6)(7,1)(8,2)(9,4)(10,5)
+            };
+            \addlegendentry{Make-verwerking}
+            
+            \addplot[fill=orange!70, draw=orange!90!black]
+            coordinates {
+                (1,0)(2,4)(3,3)(4,4)(5,4)
+                (6,5)(7,0)(8,3)(9,4)(10,5)
+            };
+            \addlegendentry{Monday.com workitem}
+            
+            \addplot[fill=red!60, draw=red!80!black]
+            coordinates {
+                (1,0)(2,0)(3,5)(4,7)(5,0)
+                (6,6)(7,0)(8,0)(9,5)(10,8)
+            };
+            \addlegendentry{Outlook-notificatie}
+        \end{axis}
+    \end{tikzpicture}
+    \caption{Opgesplitste responstijden per stap voor tien metingen (gestapeld staafdiagram)}
+    \label{fig:responstijd}
+\end{figure}
+
+Wat meteen opvalt in de grafiek is dat de wachttijd tussen de Alert Rule-trigger en de Make-webhook-ontvangst gemiddeld 120 seconden bedraagt en veruit de grootste component is. Make zelf is snel: tokenaanvraag, Log Analytics API-query en routing duren samen gemiddeld slechts 2 seconden. Het aanmaken van een workitem en het versturen van een mail voegen elk enkele seconden toe. De totale responstijd van gemiddeld 143 seconden is moeilijk te vergelijken met een concrete waarde uit de oude situatie, omdat die situatie geen gestandaardiseerd responsproces had. Wat wel duidelijk is, is dat meldingen vroeger soms uren onopgemerkt bleven, terwijl er nu binnen twee à drie minuten altijd een reactie op gang kan komen.
+
+%% -----------------------------------
+
+\subsection{KPI 3: Verhouding relevante versus irrelevante meldingen}
+
+%TODO - Security infra mails verwerken & deze tekst aanpassen
+Een van de concrete klachten uit de probleemanalyse was dat de e-mailmeldingen vanuit Microsoft 365 Defender nauwelijks werden gelezen. De scope was te breed en de meldingen te generiek om er direct iets mee te doen. Dat probleem is niet uniek voor Devinity. \autocite{10.1145/3723158} stelt dat een te hoog volume aan niet-actiegerichte meldingen leidt tot alert fatigue, waarbij analisten meldingen steeds vaker negeren of volledig afhaken.
+
+Het proof-of-concept filtert in twee stappen. Eerst zorgen de KQL-queries in de Alert Rules zelf al voor een selectie: de \texttt{Security-FirewallLog-Alert} kijkt enkel naar geblokkeerde WAF-events, de \texttt{Security-Error-Alert} triggert pas bij twintig of meer occurrences van dezelfde IP-statuscodecombo binnen vijf minuten. Events die die drempel niet halen, genereren nooit een webhook. Daarna filtert de eerste Router-module in Make opnieuw: payloads die niet overeenkomen met een van de twee bekende alert types worden genegeerd en doorlopen het scenario niet verder.
+
+De filterefficiëntie werd over vijf testrondes bijgehouden door het totale aantal ruwe events in \texttt{AGWFirewallLogs} en \texttt{AGWAccessLogs} te vergelijken met het aantal events dat effectief in \texttt{WAFFilteredEvents\_CL} belandde. Tabel~\ref{tab:filterratio} geeft een overzicht.
+
+\begin{table}[H]
+    \centering
+    \caption{Filterefficiëntie over vijf testrondes op de QA-omgeving}
+    \label{tab:filterratio}
+    \small
+    \begin{tabular}{lrrrrrl}
+        \toprule
+        \textbf{Testronde} & \textbf{Ruwe events} & \textbf{Log Analytics} & \textbf{Items} & \textbf{Mails} & \textbf{Gefilterd} & \textbf{Filterratio} \\
+        \midrule
+        Ronde 1 & 821  & 14 & 2 & 0 & 807  & 98,3\% \\
+        Ronde 2 & 743  & 11 & 2 & 1 & 732  & 98,5\% \\
+        Ronde 3 & 698  &  9 & 1 & 0 & 689  & 98,7\% \\
+        Ronde 4 & 876  & 15 & 2 & 1 & 861  & 98,3\% \\
+        Ronde 5 & 719  & 10 & 1 & 0 & 709  & 98,6\% \\
+        \midrule
+        \textbf{Totaal} & \textbf{3,857} & \textbf{59} & \textbf{8} & \textbf{2} & \textbf{3,798} & \textbf{98,5\%} \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}
+        \begin{axis}[
+            ybar stacked,
+            width=\textwidth,
+            height=7cm,
+            bar width=0.9cm,
+            symbolic x coords={Ronde 1, Ronde 2, Ronde 3, Ronde 4, Ronde 5},
+            xtick=data,
+            xlabel={Testronde},
+            ylabel={Aantal events},
+            ymin=0, ymax=1000,
+            ymajorgrids=true,
+            grid style={dashed, gray!30},
+            legend style={
+                at={(0.5,-0.22)},
+                anchor=north,
+                legend columns=4,
+                font=\small
+            },
+            tick align=outside,
+            ]
+            \addplot[fill=gray!35, draw=gray!60]
+            coordinates {
+                (Ronde 1,807)(Ronde 2,732)
+                (Ronde 3,689)(Ronde 4,861)(Ronde 5,709)
+            };
+            \addlegendentry{Weggefilterd (ruis)}
+            
+            \addplot[fill=blue!60, draw=blue!80!black]
+            coordinates {
+                (Ronde 1,12)(Ronde 2,8)
+                (Ronde 3,8)(Ronde 4,12)(Ronde 5,9)
+            };
+            \addlegendentry{Log Analytics}
+            
+            \addplot[fill=orange!70, draw=orange!90!black]
+            coordinates {
+                (Ronde 1,2)(Ronde 2,2)
+                (Ronde 3,1)(Ronde 4,2)(Ronde 5,1)
+            };
+            \addlegendentry{Workitems}
+            
+            \addplot[fill=red!60, draw=red!80!black]
+            coordinates {
+                (Ronde 1,0)(Ronde 2,1)
+                (Ronde 3,0)(Ronde 4,1)(Ronde 5,0)
+            };
+            \addlegendentry{Mails}
+        \end{axis}
+    \end{tikzpicture}
+    \caption{Trechterwerking van de filteringstrategie per testronde: van ruwe events naar gerichte acties}
+    \label{fig:filterratio}
+\end{figure}
+
+Over alle vijf rondes samen werden 3,857 ruwe events geregistreerd, waarvan er slechts 59 de volledige pipeline doorliepen naar \texttt{WAFFilteredEvents\_CL}. Dat is een filterratio van 98,5\%. Die hoge ratio is te verklaren door de context: de QA-omgeving genereert veel routinematig testverkeer dat de drempelwaarden van de Alert Rules niet haalt. In een productieomgeving met reëel gebruikersverkeer zal de verhouding anders liggen, maar de basislogica blijft dezelfde. Van de 59 doorgestuurde events resulteerden er 8 in een workitem in monday.com en 2 in een e-mailnotificatie. De drempelwaarden die dat onderscheid bepalen, zoals de twintig occurrences voor de \texttt{Security-Error-Alert}, zijn afgestemd op de testomgeving en zullen in productie bijgestuurd moeten worden op basis van het werkelijke verkeerspatroon.
+
+%% -----------------------------------
+
+\section{Koppeling aan de deelvragen}
+
+\subsection{P2: Snellere en consistentere detectie}
+De probleemanalyse maakte duidelijk dat detectie niet systematisch verliep. Het systeem detecteert nu elk event via een geautomatiseerde cyclus van vijf minuten die altijd draait, ongeacht het tijdstip of wie er aanwezig is. Alle geblokkeerde WAF-events en afwijkende statuscodepatronen boven de drempelwaarde worden op dezelfde manier verwerkt. De gemiddelde detectietijd van 187 seconden, met een maximum van 298 seconden, toont aan dat de consistentie nu technisch gegarandeerd is in plaats van afhankelijk van menselijke alertheid.
+
+\subsection{P3: Beter overzicht via centralisatie}
+Logs en meldingen zaten verspreid over meerdere systemen zonder onderlinge koppeling, waardoor een volledig beeld krijgen van wat er aan de hand was tijdrovend en foutgevoelig was. Het systeem brengt alle gefilterde security-events samen in één centrale tabel in Azure Log Analytics via de Logs Ingestion API. Die integratie normaliseert de binnenkomende data naar een vast schema, zodat events uit verschillende bronnen op een uniforme manier opgeslagen en bevraagd kunnen worden. Bovenop die opslag biedt het Azure Monitor Workbook een overzicht van de WAF-activiteit: het totaal aantal geblokkeerde events, de meest actieve bron-IP-adressen, de dominante rule groups en de spreiding van blokkeringen in de tijd. Dat is informatie die vroeger enkel beschikbaar was door zelf meerdere tools langs te gaan en data manueel samen te brengen.
+
+\subsection{P4 en O5: Objectieve meting via KPI's}
+Er waren voordien geen meetpunten om te beoordelen of de security monitoring effectief werkte. De drie KPI's in dit hoofdstuk vullen dat gat in. De detectiecyclus van vijf minuten staat vast in de Alert Rule-configuratie, de responstijd is afleidbaar uit de tijdstempels in Log Analytics en monday.com, en de filterlogica in de KQL-queries en de Make Router-module bepaalt aantoonbaar welke events wel of niet verder gaan. De meetresultaten in Tabellen~\ref{tab:detectiesnelheid}, \ref{tab:responstijd} en~\ref{tab:filterratio} maken het voor het eerst mogelijk om concrete uitspraken te doen over hoe het systeem presteert en hoe dat in de tijd evolueert.
+
+\subsection{P5: Operationele efficiëntie ten opzichte van de huidige situatie}
+Vroeger moesten analisten zelf tussen systemen schakelen om een volledig beeld van een incident te krijgen en zelf verbanden leggen tussen events die in verschillende tools stonden. Van detectie over filtering en normalisatie tot het aanmaken van workitems en het sturen van notificaties loopt nu de volledige keten automatisch. Een analist krijgt een workitem aangeleverd met de relevante context en heeft via het workbook toegang tot een geaggregeerd overzicht. De tijdwinst zit niet alleen in de snellere detectie en respons, maar ook in de tijd die niet meer besteed hoeft te worden aan het manueel verzamelen van informatie.
+
+Daarnaast genereert het systeem via het workbook en de automatische notificaties een vorm van rapportage die zowel details als een breder overzicht combineert. Technische informatie zoals bron-IP-adressen en rule groups is beschikbaar voor belanghebbenden, terwijl het workbook ook een overzicht op hoger niveau biedt dat bruikbaar is voor rapportering aan management. Tot slot is de betrouwbaarheid van het systeem zelf een relevant aandachtspunt. De huidige opzet is afhankelijk van de beschikbaarheid van Make, Azure Log Analytics en de Logs Ingestion API. Een uitval van één van die componenten onderbreekt de volledige detectie- en notificatieketen. In een productieomgeving verdient het dan ook aanbeveling om monitoring op het systeem zelf in te stellen, zodat een eventuele onderbreking tijdig opgemerkt wordt.
+
+%% -----------------------------------
+
+\section{Aanbevelingen voor optimalisatie}
+
+Het systeem werkt correct binnen de testomgeving, maar er zijn een aantal zaken die aangepakt moeten worden voor een productie-inzet.
+
+De drempelwaarden in de Alert Rules zijn de meest urgente parameter om bij te stellen. De twintig occurrences voor de \texttt{Security-Error-Alert} en het tijdsvenster van vijf minuten zijn gekozen op basis van wat werkte in de testomgeving, niet op basis van het werkelijke verkeerspatroon van Devinity. Een te lage drempel genereert onnodige meldingen waardoor mensen opnieuw stoppen met kijken, een te hoge drempel mist echte events. Het bijstellen van die waarden op basis van een analyse van normaal productieverkeer is de eerste stap na een eventuele uitrol.
+
+Een logische volgende uitbreiding is anomaliedetectie op basis van historische WAF-data. In de sectie over mogelijke uitbreidingen in het vorige hoofdstuk werd al beschreven hoe per uur van de dag een baselinepatroon kan worden opgebouwd en vergeleken met het actuele eventvolume. Dat maakt het mogelijk om volumetrische afwijkingen te detecteren die rule-based detectie niet oppikt, zoals een gecoördineerde aanval die individuele drempels niet overschrijdt maar in de tijdreeks wel een duidelijke piek vormt.
+
+De architectuur is bewust beperkt tot de Azure WAF als databron, maar de opzet laat toe om bijkomende bronnen te integreren zonder het centrale platform aan te passen. Events uit externe SaaS-integraties kunnen elk via een nieuw Make-scenario worden opgenomen. Dat zou ook correlatie tussen events uit verschillende lagen van de infrastructuur mogelijk maken, wat nu buiten scope valt.
+
+Naast de technische uitbreidingen is er ook een organisatorische stap nodig: het vastleggen van een procedure voor hoe met de gegenereerde workitems omgegaan moet worden. Het systeem levert de informatie aan, maar wie is verantwoordelijk voor opvolging bij een high-severity event en binnen welke termijn? Zonder die afspraken blijft de winst in detectiesnelheid en responstijd gedeeltelijk theoretisch.
+
+Ten slotte is het Make-kredietlimiet een praktische beperking die in de gaten gehouden moet worden. Het tijdsvenster van vijf minuten is mede gekozen om het aantal scenario-uitvoeringen te beperken. Als de schaal van events in productie groter is, kan het zinvol zijn om te bekijken of een kortere cyclus haalbaar is of dat een deel van de verwerkingslogica dichter bij de databron geplaatst kan worden, bijvoorbeeld via Azure Logic Apps.
+
+%% -----------------------------------
+
+\section{Conclusie}
+
+Het proof-of-concept pakt de concrete problemen uit de probleemanalyse aan. Waar de situatie bij Devinity gekenmerkt werd door verspreide tools, geen systematische logging, een reactieve aanpak en geen manier om efficiëntie te meten, biedt het gebouwde systeem gestructureerde detectie, een gecentraliseerd overzicht en een gedifferentieerde respons op basis van de ernst van een event.
+
+De drie KPI's sluiten de cirkel. Een gemiddelde detectietijd van 187 seconden vervangt een situatie zonder enige gegarandeerde detectie. Een gemiddelde responstijd van 23,9 seconden, waarbij de volledige keten automatisch verloopt, vervangt een werkwijze waarbij meldingen soms uren onopgemerkt bleven. Een gemiddeld filterratio van 98,5\% op de QA-omgeving toont aan dat de filteringstrategie werkt: van 3,857 ruwe events resulteerden er uiteindelijk maar 2 in een e-mailnotificatie, wat het probleem van de te brede en ongelezen meldingen concreet aanpakt.
+
+Wat ook belangrijk is: al deze verbeteringen zijn gerealiseerd zonder de bestaande infrastructuur te vervangen. Make, Azure Log Analytics, Azure Monitor Workbooks en monday.com waren al beschikbaar. Het verschil zit in de manier waarop ze samenwerken: niet als losstaande tools, maar als onderdelen van één geïntegreerde pipeline met duidelijk gescheiden verantwoordelijkheden.
+
+Het proof-of-concept legt de basis voor een aanpak waarbij detectie en opvolging proactief en meetbaar zijn. De aanbevelingen in dit hoofdstuk geven aan welke stappen nodig zijn om van die basis een robuuste productieomgeving te maken.

@@ -4,211 +4,98 @@
 \section{Inleiding}
 Op basis van de probleemanalyse wordt in deze fase een concrete architectuur uitgewerkt die toelaat om securitydata binnen de SaaS- en DevOps-omgeving van Devinity op een gestructureerde manier te centraliseren, verwerken en analyseren. Uit de analyse bleek dat de huidige situatie gekenmerkt wordt door een verspreiding van tools zonder centrale coördinatie, een gebrek aan overzicht over actieve dreigingen en een voornamelijk reactieve aanpak van incident response. Incidenten worden met andere woorden vaak pas opgepikt nadat ze zich al hebben voorgedaan, in plaats van proactief gedetecteerd te worden.
 
-Het voorgestelde ontwerp vertrekt vanuit de kernprincipes van SIEM-systemen, namelijk logaggregatie, normalisatie, eventcorrelatie en rapportering. Tegelijk blijft het bewust binnen de scope van een proof-of-concept: het doel is niet om een volledig SIEM-platform te bouwen, maar om deze principes toe te passen binnen een haalbare en afgebakende context die aansluit bij de bestaande infrastructuur van Devinity. Omwille van technische haalbaarheid wordt de implementatie daarbij primair uitgewerkt rond de Azure Web Application Firewall als databron, wat verder wordt toegelicht in de bespreking van de afzonderlijke lagen.
+Het voorgestelde ontwerp vertrekt vanuit de kernprincipes van SIEM-systemen, namelijk normalisatie, eventcorrelatie en rapportering. Tegelijk blijft het bewust binnen de scope van een proof-of-concept: het doel is niet om een volledig SIEM-platform te bouwen, maar om deze principes toe te passen binnen een haalbare en afgebakende context die aansluit bij de bestaande infrastructuur van Devinity. Omwille van technische haalbaarheid wordt de implementatie daarbij voornamelijk uitgewerkt rond de Azure Web Application Firewall als databron, wat verder wordt toegelicht in de bespreking van de afzonderlijke lagen.
 
 %% -----------------------------------
 
 \section{Architectuuroverzicht}
 De architectuur is opgebouwd uit drie functionele lagen, aangevuld met een component voor incident response. Elke laag heeft een duidelijk afgebakende verantwoordelijkheid, waardoor de oplossing overzichtelijk blijft en beter aansluit op de huidige werking van Devinity. Door deze gelaagde opbouw wordt de verwerking van securitydata opgesplitst in duidelijke stappen, gaande van ruwe databronnen over initiële filtering tot centrale analyse. Op deze manier wordt vermeden dat alle verwerking ongecontroleerd en verspreid gebeurt, zoals in de huidige situatie het geval is. Tegelijk blijft de data wel centraal beschikbaar in het analyseplatform, waardoor een globaal overzicht en correlatie van events mogelijk wordt.
 
-De eerste laag omvat de databronnen en blijft ongewijzigd ten opzichte van de huidige situatie. De tweede laag staat in voor data-ingestie en een eerste vorm van filtering, waarbij Make wordt ingezet als centrale automatiseringstool. De derde laag vormt het centrale verwerkingsplatform zelf, gebaseerd op een oplossing die steunt op Azure-technologieën, waar data wordt opgeslagen, genormaliseerd, geanalyseerd en gevisualiseerd. Bovenop deze drie lagen bevindt zich de incident response component, die acties triggert op basis van de analyseresultaten.
+De eerste laag omvat de databronnen en blijft ongewijzigd ten opzichte van de huidige situatie. De tweede laag staat in voor data-ingestie, filtering en verwerking, waarbij Make wordt ingezet als centraal automatiseringstool dat de incident response aanstuurt. De derde laag vormt het verwerkingsplatform zelf, gebaseerd op een oplossing die steunt op technologieën binnen Azure, waar data wordt opgeslagen, genormaliseerd, geanalyseerd en gevisualiseerd. Bovenop deze drie lagen bevindt zich de incident response component, die acties triggert op basis van de signalen die Make doorstuurt vanuit laag 2.
 
-Deze gelaagde aanpak maakt het mogelijk om de bestaande infrastructuur zo veel mogelijk te behouden, terwijl tegelijk een meer gecentraliseerde en proactieve monitoringoplossing wordt geïntroduceerd. De scheiding van verantwoordelijkheden zorgt er bovendien voor dat wijzigingen in één laag slechts een beperkte impact hebben op de andere lagen.
+Deze gelaagde aanpak maakt het mogelijk om de bestaande infrastructuur zo veel mogelijk te behouden, terwijl tegelijk een meer gecentraliseerde en proactieve monitoringoplossing wordt geïntroduceerd. De scheiding van verantwoordelijkheden zorgt er voor dat wijzigingen in één laag slechts een beperkte impact hebben op de andere lagen.
 
 %% -----------------------------------
 
 \section{Laag 1: Databronnen}
-De eerste laag bestaat uit alle systemen die securityrelevante data genereren binnen de huidige omgeving van Devinity. Deze bronnen blijven buiten de scope van de voorgestelde aanpassingen, aangezien uit de probleemanalyse bleek dat het vooral de verwerking, centralisatie en opvolging van die data is die tekortschiet, en niet noodzakelijk het bestaan van de databronnen zelf.
+De eerste laag bestaat uit alle systemen die securityrelevante data genereren binnen de huidige omgeving van Devinity. Deze bronnen blijven buiten de scope van de voorgestelde aanpassingen, aangezien uit de probleemanalyse bleek vooral dat de verwerking, centralisatie en opvolging van die data het probleem is, en niet noodzakelijk het bestaan van de databronnen zelf.
 
-New Relic levert observabilitydata zoals logs, metrics en alerts die nuttig zijn om afwijkend gedrag, foutpatronen of plotselinge wijzigingen in applicatiegedrag te detecteren. Belangrijk hierbij is echter dat New Relic in de huidige opzet vooral fungeert als eindstation voor applicatie- en codelogs, en niet primair gericht is op security monitoring. De Azure Web Application Firewall (WAF) registreert inkomend webverkeer en blokkeringsacties op basis van managed en custom rules. Dit is bijzonder relevant voor het detecteren van aanvallen of verdachte verzoeken, zeker in een context waar GraphQL-verkeer en interne API's een belangrijke rol spelen. Microsoft 365 Defender vormt een bijkomende bron van securitymeldingen en incidentinformatie, al bleek uit de probleemanalyse dat deze meldingen vandaag weinig gestructureerd worden opgevolgd. Tot slot leveren SaaS-applicaties en externe integraties aanvullende events aan die relevant zijn voor security monitoring en incidentopvolging.
+New Relic levert observabilitydata zoals logs, metrics en alerts die nuttig zijn om afwijkend gedrag, foutpatronen of plotselinge wijzigingen in applicatiegedrag te detecteren. Belangrijk hierbij is echter dat New Relic in de huidige opzet vooral fungeert als eindstation voor applicatie- en codelogs, en niet primair gericht is op security monitoring, waardoor deze niet behandeld zal worden binnen dit proof-of-concept. De Azure Web Application Firewall (WAF) registreert inkomend webverkeer en blokkeringsacties op basis van managed en custom rules. Dit is bijzonder relevant voor het detecteren van aanvallen of verdachte verzoeken, zeker in een context waar GraphQL-verkeer en interne API's een belangrijke rol spelen. Naast de firewalllogs levert de Azure WAF ook aanvullende toegangslogs die informatie bevatten over alle HTTP-verzoeken die de Application Gateway verwerkt, inclusief de bijbehorende statuscodes. 
 
-Het is belangrijk dat deze laag niet beschouwd wordt als een uniforme bron van data, maar als een verzameling van systemen met elk hun eigen formaat, detailniveau en manier van rapporteren. Net daarom is een tussenlaag nodig die deze informatie op een consistente manier kan verzamelen en voorbereiden voor verdere verwerking.
+Binnen dit proof-of-concept wordt dan ook bewust gekozen om codelogs en applicatielogs buiten de architectuur te houden. Deze logs zijn immers voornamelijk gericht op applicatieprestaties en foutopsporing, en niet op security monitoring. Het opnemen van deze bronnen zou de scope aanzienlijk verbreden zonder een directe meerwaarde te bieden voor de centrale doelstelling van dit ontwerp, namelijk het centraliseren en opvolgen van securityrelevante data. De oplossing richt zich uitsluitend op security-specifieke logs en alerts, zoals WAF-blokkeringen en beveiligingsgerelateerde events.
 
-Voor dit proof-of-concept wordt de implementatie primair uitgewerkt rond de Azure WAF als databron. Een belangrijke overweging hierbij is dat veel logging van SaaS- en DevOps-tools momenteel terechtkomt in New Relic, dat echter niet gericht is op security maar op applicatie- en codelogs. De Azure WAF levert daarentegen data op die direct relevant is voor security monitoring. Daarnaast is New Relic een externe tool waarvan het gebruik op termijn kan wijzigen, waardoor een directe afhankelijkheid ervan in de ingestiepipeline bewust wordt vermeden. De architectuur is zo opgezet dat andere bronnen in een latere fase op een gelijkaardige manier kunnen worden geïntegreerd.
+Voor dit proof-of-concept wordt de implementatie uitgewerkt rond de Azure WAF als databron, meer bepaald de firewalllogs en toegangslogs die via de Application Gateway worden gegenereerd. Een belangrijke overweging hierbij is dat er momenteel veel logs terechtkomen in New Relic, die echter niet gericht zijn op security maar op applicatie- en codelogs. De Azure WAF levert daarentegen data op die direct relevant is voor security monitoring. Daarnaast is New Relic een externe tool waarvan het gebruik op termijn kan wijzigen, waardoor een directe afhankelijkheid ervan in de ingestiepipeline bewust wordt vermeden. De architectuur is zo opgezet dat andere bronnen in een latere fase op een gelijkaardige manier kunnen worden geïntegreerd, waarbij telkens een tussenlaag zorgt voor consistente verwerking en doorstuur naar het centrale platform.
 
 %% -----------------------------------
 
-\section{Laag 2: Data-ingestie en initiële detectie}
-De tweede laag fungeert als brug tussen de verspreide databronnen en het centrale platform. In deze laag wordt data verzameld via API-polling, webhooks, e-mailnotificaties of bestaande integraties, afhankelijk van wat elke bron technisch toelaat. Het doel is niet om al volledige analyse uit te voeren, maar om relevante events op een gecontroleerde manier op te vangen en door te sturen.
+\section{Laag 2: Data-ingestie, filtering en verwerking}
+De tweede laag fungeert als brug tussen de databron en het centrale platform. Azure Monitor stuurt via een webhook een notificatie naar Make wanneer een alert wordt getriggerd, waarna Make de relevante logdata ophaalt via de Log Analytics API en verwerkt voor verdere opslag en opvolging. Het doel is niet om al volledige analyse uit te voeren, maar om relevante events op een gecontroleerde manier op te vangen, door te sturen en waar nodig een incident response te triggeren.
 
-\subsection{Rol van Make als ingestietool}
-Binnen deze architectuur wordt Make\footnote{Make (voorheen Integromat) is een visueel 
-    automatiseringsplatform waarmee workflows kunnen worden opgebouwd zonder code te 
-    schrijven.} gebruikt als centrale ingestietool. Deze keuze is onderbouwd vanuit 
-verschillende invalshoeken: de bestaande werking van Devinity, een vergelijking met 
-alternatieven, en de toekomstgerichtheid van de oplossing.
+Binnen deze architectuur wordt Make\footnote{Make (voorheen Integromat) is een visueel automatiseringsplatform waarmee workflows kunnen worden opgebouwd zonder code te schrijven.} gebruikt als centrale ingestietool. Deze keuze is onderbouwd vanuit verschillende invalshoeken: de bestaande werking van Devinity, een vergelijking met alternatieven, en de toekomstgerichtheid van de oplossing.
 
 \paragraph{Aansluiting bij de bestaande werking.}
-Make wordt binnen Devinity al actief ingezet voor het automatiseren van workflows en 
-het doorsturen van meldingen. Het uitbreiden van deze bestaande Make-omgeving met een 
-meer structurele ingestierol is daarom aanzienlijk minder ingrijpend dan het 
-introduceren van een volledig nieuwe tool. De developers zijn vertrouwd met de werking 
-van Make, bestaande scenario's kunnen worden hergebruikt of uitgebreid, en er is geen 
-bijkomende leercurve of onboarding nodig. Dit sluit direct aan bij de doelstelling om 
-de huidige werkwijze zo weinig mogelijk te verstoren.
+Make wordt binnen Devinity al actief ingezet voor het automatiseren van workflows en het doorsturen van meldingen. Het uitbreiden van deze bestaande Make-omgeving met een meer structurele ingestierol is daarom aanzienlijk minder ingrijpend dan het introduceren van een volledig nieuwe tool. De developers zijn vertrouwd met de werking van Make, bestaande scenario's kunnen worden gemakkelijk hergebruikt of uitgebreid, en er is geen bijkomende leercurve of onboarding nodig. Dit sluit direct aan bij de doelstelling om de huidige werkwijze zo weinig mogelijk te verstoren.
 
 \paragraph{Vergelijking met alternatieven.}
-Een voor de hand liggend alternatief zou zijn om de WAF-diagnostics rechtstreeks te 
-koppelen aan Azure Log Analytics, zonder tussenlaag. Azure biedt hiervoor native 
-ondersteuning via diagnostische instellingen. Deze aanpak is technisch eenvoudig, maar 
-biedt weinig flexibiliteit: alle ruwe logdata wordt onbewerkt doorgestuurd, zonder 
-mogelijkheid tot selectie, verrijking of contextuele filtering vóór opslag. Dit leidt 
-tot hogere opslagkosten en meer ruis in het analyseplatform.
+Een voor de hand liggend alternatief zou zijn om de WAF-diagnostics rechtstreeks te koppelen aan Azure Log Analytics, zonder tussenlaag. Azure biedt hiervoor native ondersteuning via diagnostische instellingen. Deze aanpak is technisch eenvoudig, maar biedt weinig flexibiliteit: alle ruwe logdata wordt onbewerkt doorgestuurd, zonder mogelijkheid tot selectie of filtering vóór opslag. Dit leidt tot hogere opslagkosten en meer ruis in het analyseplatform.
 
-Een andere optie is Azure Logic Apps, dat functioneel sterk lijkt op Make maar zich 
-dieper integreert binnen het Azure-ecosysteem. Voor een organisatie die al met Make 
-werkt en waarbij de scenario's reeds zijn opgebouwd, weegt het voordeel van native 
-Azure-integratie echter niet op tegen de kost en complexiteit van een migratie naar 
-een nieuw platform. Azure Event Grid is een derde alternatief, maar is primair gericht 
-op event-driven architecturen binnen Azure zelf en biedt minder ondersteuning voor 
-externe bronnen of visueel beheer van workflows.
+Een bijkomend nadeel van de native aanpak is dat ze stopt bij de opslag van data. Er is geen ingebouwde koppeling met externe tools voor incident response. Make daarentegen werkt niet alleen als ingestietool, maar ook als aansturing: op basis van de ernst van een event worden automatisch acties ondernomen. Zo kunnen beveiligingsincidenten rechtstreeks vertaald worden naar Outlook e-mails of werkitems in Monday.com.
 
-Make biedt daarentegen een laagdrempelige, visueel beheerbare omgeving die meerdere 
-externe en interne bronnen kan aanspreken via webhooks, API-polling en kant-en-klare 
-connectoren. Dit maakt het bijzonder geschikt als ingestielaag in een omgeving waar 
-de databronnen divers zijn en niet allemaal binnen hetzelfde ecosysteem zitten.
+Make biedt daarentegen een gemakkelijke, visueel overzichtelijke omgeving die meerdere externe en interne bronnen kan aanspreken via webhooks, API-polling en andere connectoren. Dit maakt het bijzonder geschikt als ingestielaag in een omgeving waar de databronnen divers zijn en niet allemaal binnen hetzelfde ecosysteem zitten.
 
 \paragraph{Toekomstgerichtheid en uitbreidbaarheid.}
-Een belangrijk voordeel van Make als ingestietool is de schaalbaarheid naar de toekomst 
-toe. De huidige implementatie focust op de Azure WAF als primaire bron, maar de 
-architectuur is bewust generiek opgezet. Wanneer in een latere fase bijkomende bronnen 
-worden geïntegreerd, zoals New Relic-alerts, meldingen vanuit Microsoft 365 Defender 
-of events uit externe SaaS-integraties, kan dit telkens worden gerealiseerd door een 
-nieuw scenario toe te voegen binnen de bestaande Make-omgeving. Er is geen aanpassing 
-nodig aan het centrale platform of de incident response component. Make fungeert zo als 
-een flexibele en uitbreidbare toegangspoort tot het centrale analyseplatform, waarbij 
-elke nieuwe databron op een vergelijkbare en gestandaardiseerde manier wordt 
-opgenomen. Dit maakt de oplossing niet alleen waardevol binnen de huidige scope, maar 
-ook duurzaam inzetbaar naarmate de infrastructuur van Devinity verder groeit.
+Een belangrijk voordeel van Make als ingestietool is de schaalbaarheid naar de toekomst toe. De huidige implementatie focust op de Azure WAF als primaire bron, maar de architectuur is bewust generiek opgezet. Wanneer in een latere fase bijkomende bronnen worden geïntegreerd, zoals New Relic-alerts, meldingen vanuit Microsoft 365 Defender of events uit externe SaaS-integraties, kan dit telkens worden gerealiseerd door een nieuw scenario toe te voegen binnen de bestaande Make-omgeving. Er is geen aanpassing nodig aan het centrale platform of de incident response component. Make fungeert zo als een flexibele en uitbreidbare toegangspoort tot het centrale analyseplatform, waarbij elke nieuwe databron op een vergelijkbare en gestandaardiseerde manier wordt opgenomen. Dit maakt de oplossing niet alleen waardevol binnen de huidige scope, maar ook duurzaam inzetbaar naarmate de infrastructuur van Devinity verder groeit.
 
-Concreet worden in dit proof-of-concept scenario's opgezet die logdata en alerts 
-binnenhalen vanuit de Azure WAF als primaire bron. De opzet blijft evenwel generiek 
-genoeg om in een latere fase andere bronnen op een vergelijkbare manier te integreren. 
-Afhankelijk van de technische mogelijkheden van elke bron gebeurt dit via een webhook, 
-een connector, een periodieke API-opvraag of het uitlezen van inkomende notificaties. 
-Zodra een event wordt ontvangen, wordt het geformatteerd en voorzien van de nodige 
-context zodat het doorgegeven kan worden aan het centrale platform.
+Concreet worden in dit proof-of-concept scenario's opgezet die logdata en alerts binnenhalen vanuit de Azure WAF als primaire bron. De opzet blijft evenwel generiek genoeg om in een latere fase andere bronnen op een vergelijkbare manier te integreren. Afhankelijk van de technische mogelijkheden van elke bron gebeurt dit via een webhook, een connector, een periodieke API-opvraag of het uitlezen van inkomende notificaties. Zodra een event wordt ontvangen, wordt het geformatteerd en voorzien van de nodige context zodat het doorgegeven kan worden aan het centrale platform.
 
 \subsection{Initiële filtering en selectie}
-Niet alle data uit de bronnen is even relevant voor security monitoring. Daarom wordt 
-in deze laag reeds een eerste filtering toegepast, met als doel ruis te beperken en 
-enkel de events door te sturen die waardevol zijn voor verdere analyse. Denk 
-bijvoorbeeld aan WAF-blokkeringen die matchen met bekende aanvalspatronen of meldingen 
-die wijzen op afwijkend verkeer.
+Niet alle data uit de bronnen is even relevant voor security monitoring. Daarom zal in deze laag reeds een eerste filtering worden toegepast, met als doel ruis te beperken en enkel de events door te sturen die waardevol zijn voor verdere analyse. Denk bijvoorbeeld aan WAF-blokkeringen die matchen met bekende aanvalspatronen of meldingen die wijzen op afwijkend verkeer.
 
 \paragraph{Waarom filteren in Make en niet in Log Analytics?}
-Een bewuste ontwerpkeuze is om de initiële filtering te laten plaatsvinden in Make, 
-en niet pas na opslag in Azure Log Analytics. Hoewel Log Analytics krachtige 
-querymogelijkheden biedt via de Kusto Query Language (KQL), heeft het doorsturen van 
-alle ruwe data zonder voorafgaande selectie twee nadelen. Ten eerste verhoogt het de 
-opslagkost, omdat ook irrelevante events worden bewaard. Ten tweede vergroot het de 
-hoeveelheid ruis in het analyseplatform, wat het herkennen van relevante patronen 
-bemoeilijkt. Door een eerste filtering al in Make toe te passen, wordt enkel 
-betekenisvolle data doorgestuurd, wat zowel de kwaliteit van de analyse als de 
-kostenefficiëntie ten goede komt.
+Een bewuste ontwerpkeuze is om de initiële filtering te laten plaatsvinden in Make, en niet pas na opslag in Azure Log Analytics. Hoewel Log Analytics krachtige querymogelijkheden biedt via de Kusto Query Language (KQL), heeft het doorsturen van alle ruwe data zonder voorafgaande selectie twee nadelen. Ten eerste verhoogt het de opslagkost, omdat ook irrelevante events worden bewaard. Ten tweede vergroot het de hoeveelheid ruis in het analyseplatform, wat het herkennen van relevante patronen bemoeilijkt.
 
-Deze filtering is bewust beperkt gehouden. De bedoeling is niet om in Make al 
-uitgebreide correlatie of diepgaande analyse uit te voeren, maar om de datastroom te 
-structureren en het centrale platform te ontlasten. Op die manier blijft Make een 
-tussenlaag voor ingestie en routing, terwijl de inhoudelijke verwerking plaatsvindt 
-in de derde laag.
+De bedoeling is niet om in Make al uitgebreide correlatie of diepgaande analyse uit te voeren, maar om de datastroom te structureren en het centrale platform te ontlasten. De inhoudelijke verwerking en correlatie vindt plaats in de derde laag.
 
 %% -----------------------------------
 
 \section{Laag 3: Centraal platform voor verwerking en analyse}
 De derde laag vormt de kern van de architectuur en is verantwoordelijk voor de effectieve verwerking van de gefilterde securitydata. Alle relevante events worden hier centraal opgeslagen, genormaliseerd, geanalyseerd en gevisualiseerd. Dit is de laag die het huidige gebrek aan overzicht en centralisatie moet oplossen.
 
-\subsection{Keuze voor een Azure-gebaseerd platform}
-Voor de implementatie van dit centrale platform wordt gekozen voor een Azure-gebaseerde 
-oplossing, meer bepaald Azure Log Analytics in combinatie met Azure Monitor. Deze keuze 
-is niet toevallig, maar volgt logisch uit zowel de bestaande infrastructuur van Devinity 
-als een aantal technische en organisatorische overwegingen.
+Voor de implementatie van dit centrale platform wordt gekozen voor een Azure-gebaseerde oplossing, meer bepaald Azure Log Analytics in combinatie met Azure Monitor. Deze keuze volgt logisch uit zowel de bestaande infrastructuur van Devinity als een aantal technische overwegingen.
 
 \paragraph{Aansluiting bij de bestaande infrastructuur.}
-Devinity maakt reeds gebruik van Azure voor infrastructuur en beveiliging, en meer 
-bepaald voor de Web Application Firewall die als primaire databron fungeert in dit 
-proof-of-concept. Dat betekent dat de WAF-logs zich al binnen het Azure-ecosysteem 
-bevinden. Een externe analysetool zou deze data eerst moeten exporteren naar een ander 
-platform, wat een onnodige extra stap introduceert in de pipeline, het aanvalsoppervlak 
-vergroot en de kans op dataverlies of vertraging verhoogt. Door te kiezen voor Azure 
-Log Analytics blijft de volledige datastroom binnen dezelfde omgeving, wat de 
-architectuur eenvoudiger en betrouwbaarder maakt.
-
-\paragraph{Native integratie met Azure-diensten.}
-Azure Log Analytics en Azure Monitor beschikken over ingebouwde connectoren met 
-diensten zoals de Azure WAF en Microsoft 365 Defender. Dit betekent dat logs en 
-meldingen rechtstreeks kunnen worden geïngesteerd zonder aangepaste parsers of 
-bijkomende middleware te ontwikkelen. Externe SIEM-platformen zoals Splunk of Elastic 
-bieden vergelijkbare functionaliteit, maar vereisen doorgaans extra configuratie, 
-aanvullende licenties en integratiework om met Azure-diensten te communiceren. Binnen 
-de scope van dit proof-of-concept weegt dit voordeel zwaar door.
+Devinity maakt reeds gebruik van Azure voor infrastructuur en beveiliging, en meer bepaald voor de Web Application Firewall die als primaire databron fungeert in dit proof-of-concept. Dat betekent dat de WAF-logs zich al binnen het Azure-ecosysteem bevinden. Een externe analysetool zou deze data eerst moeten exporteren naar een ander platform, wat een onnodige extra stap introduceert in de pipeline, het aanvalsoppervlak vergroot en de kans op dataverlies of vertraging verhoogt. Door te kiezen voor Azure blijft de volledige datastroom binnen dezelfde omgeving. Dit vermijdt onnodige exports naar externe platforms, verkleint het aanvalsoppervlak en verlaagt de kans op dataverlies of vertraging in de pipeline, wat rechtstreeks aansluit bij de doelstelling om de bestaande infrastructuur van Devinity zo weinig mogelijk te verstoren.
 
 \paragraph{Kostenbeheer en licenties.}
-Het gebruik van Azure Log Analytics valt binnen het bestaande Azure-abonnement van 
-Devinity, zonder dat een bijkomende licentie voor een volledig SIEM-platform vereist is. 
-Commerciële alternatieven brengen aanzienlijke meerkosten met zich mee, zeker voor een 
-organisatie van de omvang van Devinity. De keuze voor een Azure-native oplossing maakt 
-het dus mogelijk om dezelfde analytische functionaliteiten te benutten tegen een 
-aanzienlijk lagere totale kost.
+Het gebruik van Azure Log Analytics valt binnen het bestaande Azure-abonnement van Devinity, zonder dat een bijkomende licentie voor een volledig SIEM-platform vereist is. Commerciële alternatieven brengen aanzienlijk wat kosten met zich mee De keuze voor een Azure-native oplossing maakt het mogelijk om dezelfde analytische functionaliteiten te benutten tegen een aanzienlijk lagere totale kost.
 
 \paragraph{Veiligheid en data governance.}
-Een bijkomend voordeel is dat de securitydata binnen de beveiligde Azure-omgeving 
-blijft. Het doorsturen van gevoelige logdata naar een extern platform introduceert 
-extra risico's op het vlak van compliance en toegangsbeheer. Omdat zowel de 
-infrastructuur als de analyseomgeving binnen hetzelfde platform draaien, gelden 
-dezelfde toegangscontroles, audittrails en beveiligingspolicies. Dit is relevant 
-in een context waar de verwerkte data onder meer informatie bevat over geblokkeerde 
-aanvallen, IP-adressen en interne API-patronen.
+De securitydata wordt opgeslagen binnen de beveiligde Azure-omgeving van Devinity. Make fungeert als tussenlaag voor ingestie en filtering, wat betekent dat data tijdelijk buiten Azure wordt verwerkt. Binnen de context van dit proof-of-concept is dit een aanvaardbare afweging. Enkel de relevante velden worden doorgestuurd, de volledige ruwe logdata blijft bewaard in Azure, en de toegang tot Make wordt beheerd via een service principal met beperkte rechten.
 
 \paragraph{Schaalbaarheid en toekomstbestendigheid.}
-Ten slotte biedt een Azure-gebaseerde oplossing een duidelijk groeipad. Wanneer in een 
-latere fase bijkomende databronnen worden geïntegreerd, zoals New Relic-alerts of 
-meldingen vanuit externe SaaS-integraties, kan dit gebeuren binnen dezelfde omgeving 
-zonder dat een platformmigratie nodig is. De architectuur groeit zo mee met de 
-infrastructuur van Devinity, zonder dat er een breuk ontstaat in de werkwijze of 
-toolstack.
+Een Azure-gebaseerde oplossing biedt een duidelijk groeipad. Wanneer in een latere fase bijkomende databronnen worden geïntegreerd, zoals New Relic-alerts of meldingen vanuit externe applicaties, kan dit gebeuren binnen dezelfde omgeving zonder dat een platformmigratie nodig is. De architectuur groeit zo mee met de infrastructuur van Devinity, zonder dat er een breuk ontstaat in de werkwijze of toolstack.
 
-Belangrijk hierbij is dat deze keuze niet bedoeld is als vervanging van alle bestaande 
-tools. De WAF en andere diensten blijven databronnen, terwijl het centrale platform 
-uitsluitend de rol van verwerking, analyse en rapportering opneemt. Voor een 
-proof-of-concept biedt deze aanpak voldoende functionaliteit zonder dat een volledig 
-nieuw SIEM-systeem van nul moet worden opgebouwd.
-
-\subsection{Normalisatie}
-Eén van de belangrijkste uitdagingen bij het centraliseren van data uit meerdere bronnen is dat elk systeem zijn eigen structuur en terminologie gebruikt. Om deze informatie vergelijkbaar te maken, wordt in deze laag een normalisatiestap toegepast waarbij inkomende events worden omgezet naar een gemeenschappelijk schema.
-
-Dat schema kan onder meer informatie bevatten zoals tijdstip, bron, type event, ernst, betrokken component en een korte beschrijving. In de praktijk wordt deze structuur toegepast tijdens de ingestie van data, waarbij events in een gestandaardiseerd formaat worden doorgestuurd naar het centrale platform. Door deze uniforme structuur kunnen de gegevens nadien consistent geanalyseerd en gecorreleerd worden, wat aansluit bij de SIEM-principes die in de inleiding werden aangehaald.
+Belangrijk hierbij is dat deze keuze niet bedoeld is als vervanging van alle bestaande tools. De WAF en andere diensten blijven databronnen, terwijl het centrale platform uitsluitend de rol van verwerking, analyse en rapportering opneemt.
 
 \subsection{Analyse en correlatie}
-Na normalisatie worden de events geanalyseerd via query's en regels binnen het centrale platform. Hierdoor kunnen patronen worden herkend die in de huidige situatie moeilijk zichtbaar zijn, net omdat de data nu verspreid zit over verschillende tools. Een afzonderlijke melding is niet altijd voldoende om een incident te herkennen, maar een combinatie van meerdere gebeurtenissen kan wel degelijk op een relevant risico wijzen.
-
-Zo kan het systeem bijvoorbeeld meerdere WAF-blokkeringen van hetzelfde IP-adres binnen een korte periode detecteren als verdacht gedrag, of een plotse stijging in geblokkeerde verzoeken koppelen aan een specifieke aanvalspatroon. Deze correlatie tussen events vormt een belangrijk verschil met de huidige manier van werken, waarbij informatie vooral los van elkaar bekeken wordt.
+Na normalisatie kunnen de events worden geanalyseerd via KQL-query's binnen het centrale platform. Hierdoor kunnen patronen worden herkend die in de huidige situatie moeilijk zichtbaar zijn, net omdat de data verspreid zit over verschillende tools. Een combinatie van meerdere gebeurtenissen kan wijzen op een relevant risico dat op basis van afzonderlijke meldingen niet zichtbaar zou zijn. Binnen de scope van dit proof-of-concept wordt de analyse beperkt tot filtering en aggregatie per databron. Correlatie tussen events uit verschillende bronnen vormt een aanbeveling voor een volgende fase.
 
 \subsection{Visualisatie en rapportering}
-Naast analyse moet het platform ook inzicht bieden aan de betrokkenen binnen Devinity. Daarom wordt een visualisatielaag voorzien in de vorm van dashboards en overzichten. Deze dashboards moeten toelaten om op een overzichtelijke manier de actuele securitystatus op te volgen, trends te herkennen en gebeurtenissen achteraf te analyseren.
+Naast analyse moet het platform ook inzicht bieden aan de betrokkenen binnen Devinity. Daarom wordt een visualisatielaag voorzien in de vorm van dashboards en overzichten. Deze dashboards laten toe om op een overzichtelijke manier de actuele securitystatus op te volgen, trends te herkennen en gebeurtenissen achteraf te analyseren.
 
-Een bijkomend voordeel van een centrale opslag is dat historische data beschikbaar blijft voor latere rapportering en evaluatie. Dit maakt het mogelijk om niet enkel incidenten op te volgen, maar ook om KPI's te definiëren en de effectiviteit van de monitoring op termijn te beoordelen. Op die manier sluit het ontwerp ook aan bij de vaststelling uit de probleemanalyse dat er vandaag weinig meetpunten zijn om de werking van de securityaanpak objectief te evalueren.
+Een bijkomend voordeel van centrale opslag is dat historische data beschikbaar blijft voor latere rapportering en evaluatie. Dit maakt het mogelijk om niet enkel incidenten op te volgen, maar ook KPI's te definiëren en de effectiviteit van de monitoring op termijn te beoordelen.
 
 %% -----------------------------------
 
 \section{Incident response}
-Op basis van de analyse in het centrale platform kunnen acties worden ondernomen in het kader van incident response. Dit onderdeel bevindt zich bovenop de drie lagen, omdat het vertrekt vanuit de resultaten van de verwerking en analyse.
+Op basis van de signalen die Make verwerkt in laag 2, kunnen acties worden ondernomen in het kader van incident response. Make fungeert hierbij niet alleen als ingestietool maar ook als triggerlaag voor geautomatiseerde opvolging. Wanneer een binnenkomend event aan de filtervoorwaarden voldoet, kan Make automatisch een notificatie naar de betrokken personen via e-mail sturen of een workitem aanmaken binnen Monday.com.
 
-Wanneer een alert of query in het centrale platform een bepaalde drempel overschrijdt, kan automatisch een notificatie verstuurd worden naar de juiste betrokkenen of een workitem aangemaakt worden in Monday.com. In dat workitem kan extra context worden toegevoegd, zoals het type incident, de betrokken systemen, het tijdstip van detectie en een verwijzing naar de relevante logs of queryresultaten. Hierdoor wordt de opvolging consistenter en is er minder kans dat informatie verloren gaat tussen verschillende systemen.
-
-Deze aanpak sluit beter aan bij de noden uit de probleemanalyse dan de huidige reactieve werking. Vandaag worden meldingen wel geregistreerd, maar vaak niet systematisch opgevolgd of gecorreleerd. Door incident response te koppelen aan een gecentraliseerde analyselaag kan sneller worden gereageerd en wordt ook de kwaliteit van de opvolging verbeterd.
-
-%% -----------------------------------
-
-\section{Datastromen}
-De datastroom binnen deze architectuur verloopt van de databronnen naar de ingestielaag, waar een eerste selectie plaatsvindt. Relevante events worden vervolgens doorgestuurd naar het centrale platform, waar ze worden opgeslagen en genormaliseerd. Daarna worden ze geanalyseerd en gevisualiseerd, zodat zowel operationele opvolging als historische analyse mogelijk wordt. Wanneer een incident wordt vastgesteld, wordt er op zijn beurt een notificatie of workitem aangemaakt.
-
-Deze structuur zorgt ervoor dat data niet langer verspreid blijft over verschillende systemen, maar op een consistente en traceerbare manier wordt verwerkt. Hierdoor ontstaat één overzichtelijk proces van bron tot actie.
+Deze aanpak sluit beter aan bij de noden uit de probleemanalyse dan de huidige reactieve werking. Vandaag worden meldingen wel geregistreerd, maar vaak niet systematisch opgevolgd. Door incident response rechtstreeks te koppelen aan de ingestielaag kan sneller worden gereageerd en wordt de kwaliteit van de opvolging verbeterd. Monday.com wordt daarnaast al actief gebruikt binnen Devinity, waardoor de drempel voor adoptie minimaal is.
 
 %% -----------------------------------
 
 \section{Evaluatie ten opzichte van de doelstellingen}
-De voorgestelde architectuur sluit aan bij de doelstellingen zoals geformuleerd in de inleiding en de onderzoeksvragen. De centralisatie van securitydata wordt gerealiseerd via een centraal platform dat gevoed wordt door een gestandaardiseerde ingestiepipeline met Make. De detectie van incidenten wordt mogelijk gemaakt door de combinatie van initiële filtering in laag 2 en correlatie in laag 3. Gestructureerde incident response wordt ondersteund via automatische notificaties en workitems op basis van alerts uit het centrale platform.
+De voorgestelde architectuur sluit aan bij de doelstellingen zoals geformuleerd in de inleiding en de onderzoeksvragen. De centralisatie van securitydata wordt gerealiseerd via een centraal platform dat gevoed wordt door een gestandaardiseerde ingestiepipeline met Make. De detectie van incidenten wordt mogelijk gemaakt door de combinatie van initiële filtering in laag 2 en correlatie in laag 3. Gestructureerde incident response wordt ondersteund via automatische notificaties en workitems die rechtstreeks vanuit Make worden getriggerd.
 
 De oplossing blijft bovendien haalbaar binnen de context van de bachelorproef, omdat zoveel mogelijk gebruik wordt gemaakt van bestaande tools en infrastructuur. Er is bewust geen volledige vervanging van de huidige omgeving voorzien, maar eerder een gerichte integratie van de onderdelen die vandaag al beschikbaar zijn. De keuze om het proof-of-concept te centreren rond WAF-logdata vormt geen beperking voor de bredere probleemstelling. De architectuur is generiek uitgewerkt en de bevindingen zijn overdraagbaar naar een bredere integratie van de overige databronnen die in de probleemanalyse werden geïdentificeerd.
 
@@ -222,54 +109,16 @@ De effectiviteit van het systeem kan in een latere fase worden geëvalueerd aan 
 
 \begin{figure}[H]
     \centering
-    \begin{tikzpicture}[
-        node distance=1.6cm and 2.8cm,
-        box/.style={draw, rectangle, align=center, minimum width=3.6cm, minimum height=1cm, rounded corners=2pt},
-        group/.style={draw, dashed, rounded corners, inner sep=0.5cm},
-        arrow/.style={->, thick}
-        ]
-        
-        % --- Databronnen ---
-        \node[box] (waf) {Azure WAF};
-        \node[box, right=4.2cm of waf] (nr) {New Relic\\(Code logs)};
-
-        \node[group, fit=(waf), label=above:{\textbf{Laag 1: Databronnen}}] {};
-        \node[group, fit=(nr), label=above:{\textbf{Bijkomende databron}}] {};
-
-        
-        % ---------------- Ingestie ----------------
-        \node[box, below=2.2cm of waf] (make1) {Make\\(Ingestie + filtering)};
-        \node[group, fit=(make1), label=above:{\textbf{Laag 2: Ingestie}}] {};
-        
-        % ---------------- Verwerking ----------------
-        \node[box, below=2.2cm of make1] (log) {Azure Log Analytics\\(Opslag + analyse)};
-        \node[box, right=3.5cm of log] (dash) {Azure Monitor Workbooks\\(Visualisatie)};
-        
-        \node[group, fit=(log)(dash), label=above:{\textbf{Laag 3: Verwerking \& analyse}}] {};
-        
-        % ---------------- Incident response ----------------
-        \node[box, below=2.2cm of dash] (make2) {Make\\(Triggering acties)};
-        \node[box, left=3.5cm of make2] (resp) {Monday.com};
-        
-        \node[group, fit=(make2)(resp), label=above:{\textbf{Incident Response}}] {};
-        
-        % ---------------- Flow ----------------
-        \draw[arrow] (waf) -- (make1);
-        \draw[arrow] (make1) -- (log);
-        \draw[arrow] (log) -- (dash);
-        \draw[arrow] (dash) -- (make2);
-        \draw[arrow] (make2) -- (resp);
-        
-    \end{tikzpicture}
-    \caption{Gelaagde architectuur met lineaire datastroom en gescheiden componenten}
-    \label{fig:architectuur}
+    \includegraphics[width=\textwidth]{architectuurontwerp_diagram.png}
+    \caption[Ontwerp van de gelaagde architectuur met lineaire datastroom en gescheiden componenten}
 \end{figure}
+
 
 %% -----------------------------------
 
 \section{Conclusie}
 De voorgestelde architectuur biedt een gestructureerde en haalbare oplossing voor de uitdagingen die in de probleemanalyse werden geïdentificeerd. Door te werken met drie duidelijk gescheiden lagen en een aparte incident response component wordt de versnippering van data aangepakt en wordt een basis gelegd voor een meer proactieve aanpak van security monitoring.
 
-De keuze om gebruik te maken van reeds beschikbare tools, namelijk Make voor ingestie en filtering, een Azure-gebaseerd platform voor verwerking en opslag, en Monday.com voor opvolging, maakt de oplossing realistisch binnen de context van Devinity. Er wordt bewust geen volledig nieuw platform van nul opgebouwd, maar een geïntegreerde architectuur ontworpen die de bestaande omgeving beter benut en centrale inzichten mogelijk maakt.
+De keuze om gebruik te maken van reeds beschikbare tools (Make voor ingestie, filtering en verwerken van meldingen, een Azure-gebaseerd platform voor verwerking en opslag, en Monday.com in combinatie met Outlook voor opvolging en notificatie) maakt de oplossing realistisch binnen de context van Devinity. Er wordt bewust geen volledig nieuw platform van nul opgebouwd, maar een geïntegreerde architectuur ontworpen die de bestaande omgeving beter benut en centrale inzichten mogelijk maakt.
 
 In de volgende fase wordt deze architectuur verder uitgewerkt tot een concreet proof-of-concept, waarbij de verschillende componenten worden geconfigureerd en getest aan de hand van realistische scenario's.

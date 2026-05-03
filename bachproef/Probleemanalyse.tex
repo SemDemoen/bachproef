@@ -99,47 +99,9 @@ Op basis van de voorgaande analyse, waaronder observaties en feedback van de dev
 
 \begin{figure}[H]
     \centering
-    \begin{tikzpicture}[
-        node distance=2.5cm,
-        every node/.style={draw, rectangle, align=center, minimum width=3cm, minimum height=1cm},
-        arrow/.style={->, thick}
-        ]
-        
-        % Top layer: Sources
-        \node (app1) {Backend/API};
-        \node (app2) [right of=app1, xshift=2cm] {Frontend/API};
-        
-        % Middle layer: Tools
-        \node (nr) [below of=app1, yshift=-0.6cm] {\textit{New Relic} \\ (Monitoring)};
-        \node (waf) [below of=app2, yshift=-0.6cm] {\textit{Azure WAF} \\ (Firewall)};
-        \node (app3) [right of=waf, xshift=2cm] {SaaS Integratie \\ (bv. Heroku)};
-        
-        % Make layer
-        \node (make) [below of=waf, yshift=-0.6cm] {\textit{Make} \\ (Automatisatie)};
-        \node (m365) [right of=make, xshift=2cm] {\textit{M365 Defende}r \\ (Email Alerts)};
-        
-        % Monday layer
-        \node (monday) [below of=make, yshift=-0.6cm] {\textit{Monday.com} \\ (Incident Tracking)};
-        
-        % Arrows from sources to tools (verspreid)
-        \draw[arrow] (app1) -- (nr);
-        \draw[arrow] (app2) -- (waf);
-        \draw[arrow] (app3) -- (make);
-        
-        % Extra "kruisende" relaties om versnippering te tonen
-        \draw[arrow, dashed] (app1) -- (waf);
-        \draw[arrow, dashed] (app2) -- (nr);
-        
-        % Arrows to Make (niet alles is gekoppeld)
-        \draw[arrow] (nr) -- (make);
-        \draw[arrow] (waf) -- (make);
-        \draw[arrow] (waf) -- (nr);
-        
-        % Arrows from make
-        \draw[arrow] (make) -- (monday);
-        \draw[arrow] (make) -- (m365);
-    \end{tikzpicture}
-    \caption{Versnippering van tools en gebrek aan centralisatie binnen de huidige infrastructuur van Devinity}
+    \includegraphics[width=\textwidth]{probleemanalyse_diagram.png}
+    \caption[Overzicht van de methodologie in vier fasen.]{\label{fig:probleemanalyse}
+        Schematische voorstelling van de versnippering van tools en gebrek aan centralisatie binnen de huidige infrastructuur van Devinity.}
 \end{figure}
 
 %% -----------------------------------
