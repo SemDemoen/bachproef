@@ -7,6 +7,8 @@ Op basis van het architectuurontwerp uit de vorige fase wordt in dit hoofdstuk h
 
 De implementatie verloopt in een testomgeving binnen de Azure-portal van het bedrijf en maakt gebruik van gesimuleerde data en ongevoelige logdata om realistische scenario's na te bootsen zonder afhankelijk te zijn van productiedata. Dit laat toe om de werking van het systeem te valideren op een gecontroleerde en herhaalbare manier.
 
+\newpage
+
 %% -----------------------------------
 
 \section{Testdata en simulatiescenario's}
@@ -14,27 +16,27 @@ Voordat de technische implementatie wordt beschreven, is het nuttig om stil te s
 
 De gesimuleerde testdata omvat onder meer WAF-blokkeringsevents die overeenkomen met gekende aanvalspatronen zoals SQL-injectie of cross-site scripting (XSS), gegenereerd via gerichte HTTP-verzoeken naar de Application Gateway. De gateway blokkeert deze verzoeken met een HTTP-antwoord en registreert het bijbehorende event in Log Analytics. Op die manier kan worden nagegaan of het systeem de juiste detectieregels triggert en of de verdere verwerking correct verloopt.
 
-Naast de WAF-blokkeringsevents worden ook scenario's gesimuleerd die de \texttt{Security-Error-Alert} triggeren. Hiervoor worden via een geautomatiseerd curl-script herhaalde HTTP-verzoeken verstuurd naar de Application Gateway die resulteren in specifieke statuscodes zoals 401, 403 en 404. Door hetzelfde IP-adres meer dan twintig keer dezelfde statuscode te laten genereren binnen een tijdsvenster van vijf minuten, wordt de drempelwaarde van de Alert Rule bewust overschreden. Dit laat toe om te valideren of de filterlogica correct werkt en of de verdere verwerking via Make, Log Analytics en de incident response-modules zich gedraagt zoals verwacht.
+Naast de WAF-blokkeringsevents worden ook scenario's gesimuleerd die de Security-Error-Alert triggeren. Hiervoor worden via een geautomatiseerd curl-script herhaalde HTTP-verzoeken verstuurd naar de Application Gateway die resulteren in specifieke statuscodes zoals 401, 403 en 404. Door hetzelfde IP-adres meer dan twintig keer dezelfde statuscode te laten genereren binnen een tijdsvenster van vijf minuten, wordt de drempelwaarde van de Alert Rule bewust overschreden. Dit laat toe om te valideren of de filterlogica correct werkt en of de verdere verwerking via Make, Log Analytics en de incident response-modules zich gedraagt zoals verwacht.
 
 %% -----------------------------------
 
 \section{Laag 1: Databron}
-De implementatie van de eerste laag bestaat uit het configureren van de Azure WAF als primaire databron, zoals vermeld in het architectuurontwerp. De WAF is geconfigureerd om diagnostische logs door te sturen naar een Azure Log Analytics Workspace via de diagnostische instellingen in Azure Monitor. Hierbij worden de logcategorieën \texttt{ApplicationGatewayAccessLog} en \texttt{ApplicationGatewayFirewallLog} ingeschakeld, die respectievelijk de toegangslogs en de firewalllogs van de Application Gateway bevatten.
+De implementatie van de eerste laag bestaat uit het configureren van de Azure WAF als primaire databron, zoals vermeld in het architectuurontwerp. De WAF is geconfigureerd om diagnostische logs door te sturen naar een Azure Log Analytics Workspace via de diagnostische instellingen in Azure Monitor. Hierbij worden de logcategorieën \textit{ApplicationGatewayAccessLog} en \textit{ApplicationGatewayFirewallLog} ingeschakeld, die respectievelijk de toegangslogs en de firewalllogs van de Application Gateway bevatten.
 
-In de gebruikte Azure-omgeving wordt gebruikgemaakt van de nieuwere resource-specifieke logtabellen in plaats van de algemene \texttt{AzureDiagnostics}-tabel. Dit onderscheid is relevant omdat resource-specifieke tabellen een vastere schemastructuur hebben, wat KQL-queries eenvoudiger en efficiënter maakt. Concreet betekent dit dat de firewalllogs terechtkomen in de tabel \texttt{AGWFirewallLogs} en de toegangslogs in \texttt{AGWAccessLogs}. De \texttt{AGWFirewallLogs}-tabel bevat onder meer informatie over geblokkeerde verzoeken, de bijbehorende regelidentificatoren en het bron-IP-adres, wat ze bijzonder relevant maakt voor het detecteren van aanvalspatronen. De \texttt{AGWAccessLogs}-tabel bevat daarnaast informatie over alle HTTP-verzoeken die de Application Gateway verwerkt, inclusief de bijbehorende statuscodes, clientinformatie en verwerkingstijden. Deze tabel vormt de basis voor de \texttt{Security-Error-Alert}, die afwijkende statuscodepatronen detecteert als indicatie van mogelijke toegangsproblemen of verdacht gedrag.
+In de gebruikte Azure-omgeving wordt gebruikgemaakt van de nieuwere resource-specifieke logtabellen in plaats van de algemene AzureDiagnostics-tabel. Dit onderscheid is relevant omdat resource-specifieke tabellen een vastere schemastructuur hebben, wat KQL-queries eenvoudiger en efficiënter maakt. Concreet betekent dit dat de firewalllogs terechtkomen in de tabel \textit{AGWFirewallLogs} en de toegangslogs in \textit{AGWAccessLogs}. De AGWFirewallLogs-tabel bevat onder meer informatie over geblokkeerde verzoeken, de bijbehorende regelidentificatoren en het bron-IP-adres, wat ze bijzonder relevant maakt voor het detecteren van aanvalspatronen. De AGWAccessLogs-tabel bevat daarnaast informatie over alle HTTP-verzoeken die de Application Gateway verwerkt, inclusief de bijbehorende statuscodes, clientinformatie en verwerkingstijden. Deze tabel vormt de basis voor de Security-Error-Alert, die afwijkende statuscodepatronen detecteert als indicatie van mogelijke toegangsproblemen of verdacht gedrag.
 
-De Azure WAF op de Application Gateway maakt gebruik van managed rulesets die door Microsoft worden beheerd en automatisch worden bijgewerkt. Binnen de huidige configuratie zijn twee rulesets actief: de OWASP Core Rule Set (CRS), die bescherming biedt tegen veelvoorkomende webapplicatieaanvallen zoals SQL-injectie, cross-site scripting en path traversal, en de Microsoft_BotManagerRuleSet, die bekende geautomatiseerde clients en botverkeer detecteert en classificeert. Beide rulesets genereren events in de AGWFirewallLogs-tabel wanneer een verzoek een of meerdere regels triggert, waarbij de regelidentificator en de bijbehorende regelgroep worden geregistreerd.
+De Azure WAF op de Application Gateway maakt gebruik van managed rulesets die door Microsoft worden beheerd en automatisch worden bijgewerkt. Binnen de huidige configuratie zijn twee rulesets actief: de OWASP Core Rule Set (CRS), die bescherming biedt tegen veelvoorkomende webapplicatieaanvallen zoals SQL-injectie, cross-site scripting en path traversal, en de Microsoft\_BotManagerRuleSet, die bekende geautomatiseerde clients en botverkeer detecteert en classificeert. Beide rulesets genereren events in de AGWFirewallLogs-tabel wanneer een verzoek een of meerdere regels triggert, waarbij de regelidentificator en de bijbehorende regelgroep worden geregistreerd.
 
-Omdat het verwerkingssysteem de events op basis van generieke velden uit de AGWFirewallLogs-tabel verwerkt, zoals RuleId, RuleGroup, Action en Message, is de architectuur niet gebonden aan een specifieke ruleset. Bijkomende managed rulesets die Microsoft in de toekomst beschikbaar stelt, zoals de Microsoft_DefaultRuleSet of aanvullende gespecialiseerde rulesets voor bot- of DDoS-bescherming, kunnen worden geactiveerd op de Application Gateway zonder aanpassingen aan de verwerkingspijplijn. De events die deze rulesets genereren, doorlopen automatisch dezelfde ingestie-, filter- en incident-responselogica via Make. Enkel de severitybepaling in de Make-workflow dient in dat geval uitgebreid te worden met de specifieke scoreringlogica of classificatiecriteria van de nieuwe ruleset, analoog aan de huidige behandeling van de BotManagerRuleSet en de OWASP CRS.
+Omdat het verwerkingssysteem de events op basis van generieke velden uit de AGWFirewallLogs-tabel verwerkt, zoals RuleId, RuleGroup, Action en Message, is de architectuur niet gebonden aan een specifieke ruleset. Bijkomende managed rulesets die Microsoft in de toekomst beschikbaar stelt, zoals de Microsoft\_DefaultRuleSet of aanvullende gespecialiseerde rulesets voor bot- of DDoS-bescherming, kunnen worden geactiveerd op de Application Gateway zonder aanpassingen aan de verwerkingspijplijn. De events die deze rulesets genereren, doorlopen automatisch dezelfde ingestie-, filter- en incident-responselogica via Make. Enkel de severitybepaling in de Make-workflow dient in dat geval uitgebreid te worden met de specifieke scoreringlogica of classificatiecriteria van de nieuwe ruleset, analoog aan de huidige behandeling van de BotManagerRuleSet en de OWASP CRS.
 
-Beide tabellen worden enkel ingeschakeld voor de relevante logcategorieën. Andere diagnostische logcategorieën zoals \texttt{ApplicationGatewayPerformanceLog} worden bewust buiten de configuratie gehouden, omdat deze geen securityrelevante data bevatten en het volume aan opgeslagen data onnodig zouden verhogen.
+Beide tabellen worden enkel ingeschakeld voor de relevante logcategorieën. Andere diagnostische logcategorieën zoals ApplicationGatewayPerformanceLog worden bewust buiten de configuratie gehouden, omdat deze geen securityrelevante data bevatten en het volume aan opgeslagen data onnodig zouden verhogen.
 
 %% -----------------------------------
 
 \section{Laag 2: Data-ingestie, filtering en verwerking via Make}
 \subsection{Koppeling tussen Azure Monitor en Make}
 
-Zoals beschreven in het architectuurontwerp fungeert Make als centrale tussenlaag tussen de databron en het centrale platform. Om WAF-events automatisch naar Make te sturen, wordt een Azure Monitor Alert Rule geconfigureerd met een bijbehorende Action Group. De Alert Rule is gekoppeld aan de Log Analytics Workspace als scope en maakt gebruik van een KQL-query\footnote{Kusto Query Language (KQL) is de querytaal die gebruikt wordt binnen Azure Log Analytics en Azure Monitor.} op de \texttt{AGWFirewallLogs}-tabel om geblokkeerde events rechtstreeks van de WAF te detecteren:
+Zoals beschreven in het architectuurontwerp fungeert Make als centrale tussenlaag tussen de databron en het centrale platform. Om WAF-events automatisch naar Make te sturen, wordt een Azure Monitor Alert Rule geconfigureerd met een bijbehorende Action Group. De Alert Rule is gekoppeld aan de Log Analytics Workspace als scope en maakt gebruik van een KQL-query\footnote{Kusto Query Language (KQL) is de querytaal die gebruikt wordt binnen Azure Log Analytics en Azure Monitor.} op de AGWFirewallLogs-tabel om geblokkeerde events rechtstreeks van de WAF te detecteren:
 
 \begin{lstlisting}[style=kqlstyle, caption={KQL-query voor de Azure Monitor Alert Rule op geblokkeerde WAF-events}]
     AGWFirewallLogs
@@ -45,7 +47,7 @@ Zoals beschreven in het architectuurontwerp fungeert Make als centrale tussenlaa
 
 Deze query selecteert alle geblokkeerde events uit de afgelopen vijf minuten en telt deze op, zodat de alert triggert zodra er minstens één geblokkeerd event is geregistreerd. De bijbehorende Action Group bevat één webhook-actie die bij elke triggering een HTTP POST stuurt naar het Make webhook-endpoint. Er wordt bewust gekozen voor één enkele webhook-actie per trigger, omdat Make werkt met een maandelijks kredietlimiet. Elke uitvoering van een scenario verbruikt credits, waardoor een efficiënte opzet waarbij de verwerking zoveel mogelijk gebundeld wordt binnen één scenario de voorkeur krijgt boven meerdere afzonderlijke triggers.
 
-Naast de firewall-gerelateerde alerts wordt een tweede Alert Rule geconfigureerd, \texttt{Security-Error-Alert}, die draait op de \texttt{AGWAccessLogs}-tabel. Deze regel detecteert afwijkende HTTP-statuscodes zoals 401, 403, 404, 429 en 500 en triggert wanneer een combinatie van IP-adres en statuscode minstens twintig keer voorkomt binnen een tijdsvenster van vijf minuten:
+Naast de firewall-gerelateerde alerts wordt een tweede Alert Rule geconfigureerd, Security-Error-Alert, die draait op de AGWAccessLogs-tabel. Deze regel detecteert afwijkende HTTP-statuscodes zoals 401, 403, 404, 429 en 500 en triggert wanneer een combinatie van IP-adres en statuscode minstens twintig keer voorkomt binnen een tijdsvenster van vijf minuten:
 
 \begin{lstlisting}[style=kqlstyle, caption={KQL-query voor de Security-Error-Alert Rule}]
     AGWAccessLogs
@@ -63,6 +65,7 @@ Deze regel biedt ook een indirecte benadering voor het detecteren van mogelijke 
     \centering
     \includegraphics[width=\textwidth]{azure_flow.png}
     \caption[Schematisch overzicht koppeling tussen de Azure WAF, Alert Rule, Action Group en Make.}
+    \label{fig:azure_flow_diagram}
 \end{figure}
     
 \subsection{Make-scenario: opbouw en werking}
@@ -78,16 +81,15 @@ Binnen Make wordt een scenario opgezet dat de binnenkomende events opvangt en ve
 
 Het scenario bestaat uit vier opeenvolgende onderdelen: een initiële stap waarin via twee HTTP-modules de nodige tokens worden opgehaald voor toegang tot de Azure Log Analytics Workspace, een opsplitsing op basis van het eventtype, een typespecifieke verwerking per pad gebaseerd op de payload, en een gecombineerde incident response aan het einde van elk pad.
 
-Via de twee eerste HTTP-modules worden tokens opgehaald die nodig zijn om toegang te krijgen tot de Azure Log Analytics Workspace. Eerst wordt via de \texttt{Microsoft identity endpoint} een access token gegenereerd op basis van de App Registration. Dit token fungeert als authenticatiebewijs voor verdere API-aanroepen. Vervolgens wordt deze access token gebruikt om geautoriseerde requests uit te voeren richting de Log Analytics API, waar de effectieve query’s op de workspace worden uitgevoerd om de relevante security-events op te halen en verder te verwerken binnen het scenario.
+Via de twee eerste HTTP-modules worden tokens opgehaald die nodig zijn om toegang te krijgen tot de Azure Log Analytics Workspace. Eerst wordt via de \textit{Microsoft identity endpoint} een access token gegenereerd op basis van de App Registration. Dit token fungeert als authenticatiebewijs voor verdere API-aanroepen. Vervolgens wordt deze access token gebruikt om geautoriseerde requests uit te voeren richting de Log Analytics API, waar de effectieve query’s op de workspace worden uitgevoerd om de relevante security-events op te halen en verder te verwerken binnen het scenario.
 
 \subsection{Initiële filtering via de eerste Router-module}
-De eerste Router-module vormt het vertrekpunt van de verwerkingslogica en splitst de binnenkomende events op in twee afzonderlijke paden op basis van het veld \texttt{data.essentials.alertRule}. Wanneer dit veld de waarde \texttt{Security-FirewallLog-Alert} bevat, wordt het event doorgestuurd via de WAF-route. Bevat het veld de waarde \texttt{Security-Error-Alert}, dan volgt het event het pad voor foutmeldingen. Deze opsplitsing is nodig omdat beide types inhoudelijk verschillen en een andere verwerking vereisen: een WAF-firewalllog bevat informatie over geblokkeerde requests en bijhorende regelidentificatoren, terwijl een foutmelding eerder wijst op afwijkende HTTP-statuscodes die kunnen duiden op een technisch probleem of verdacht gedrag. Door dit onderscheid vroeg in het scenario te maken, kan elk pad volledig worden afgestemd op het specifieke eventtype. 
+De eerste Router-module vormt het vertrekpunt van de verwerkingslogica en splitst de binnenkomende events op in twee afzonderlijke paden op basis van het veld \textit{data.essentials.alertRule}. Wanneer dit veld de waarde Security-FirewallLog-Alert bevat, wordt het event doorgestuurd via de WAF-route. Bevat het veld de waarde Security-Error-Alert, dan volgt het event het pad voor foutmeldingen. Deze opsplitsing is nodig omdat beide types inhoudelijk verschillen en een andere verwerking vereisen: een WAF-firewalllog bevat informatie over geblokkeerde requests en bijhorende regelidentificatoren, terwijl een foutmelding eerder wijst op afwijkende HTTP-statuscodes die kunnen duiden op een technisch probleem of verdacht gedrag. Door dit onderscheid vroeg in het scenario te maken, kan elk pad volledig worden afgestemd op het specifieke eventtype. 
 
-% AFBEELDING: screenshot van de twee filterconfiguraties van de eerste Router-module
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.8\textwidth]{make_router_filters.png}
-\caption{Filterconfiguratie van de eerste Router-module: opsplitsing tussen WAF-firewalllogs en foutmeldingen op basis van het veld \texttt{data.essentials.alertRule}}
+\caption{Filterconfiguratie van de eerste Router-module: opsplitsing tussen WAF-firewalllogs en foutmeldingen op basis van het veld \textit{data.essentials.alertRule}}
 \label{fig:make_router}
 \end{figure}
 
@@ -99,13 +101,14 @@ Elk pad volgt na de initiële opsplitsing dezelfde structuur. Een HTTP-module ha
 Afhankelijk van de severity wordt het event op drie manieren afgehandeld. Alle events worden steeds doorgestuurd via een HTTP-module naar een Data Collection Rule voor verdere verwerking binnen de Azure Log Analytics Workspace en visualisatie in een Workbook. Events met severity medium, high en critical worden daarnaast geregistreerd als workitem in Monday.com. Voor high en critical events wordt bijkomend een e-mailnotificatie verstuurd via Microsoft 365 Outlook naar de betrokken verantwoordelijken.
 
 \begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{make_filter.png}
-\caption[Schematisch overzicht afhandelingslogica op basis van severity binnen het Make-scenario.}
+    \centering
+    \includegraphics[width=\textwidth]{make_filter.png}
+    \caption[Schematisch overzicht afhandelingslogica op basis van severity binnen het Make-scenario.}
+    \label{fig:make_filter}
 \end{figure}
 
 \subsection{Severitybepaling}
-Omdat de managed rulesets binnen de Azure WAF geen native CVSS-severityscore meegeven per event, wordt de ernst van een event bepaald op basis van de beschikbare logdata. Voor events afkomstig van de \texttt{Microsoft\_BotManagerRuleSet} wordt een vaste severity \texttt{Low} toegekend, omdat deze regelset voornamelijk bekende bots detecteert die zelden een kritiek risico vormen. Voor events afkomstig van de OWASP CRS-regelset wordt de severity afgeleid uit de anomaly score, die terug te vinden is in het \texttt{Message}-veld van de \texttt{AGWFirewallLogs}-tabel in het formaat \texttt{Total Score: X}. Deze score wordt omgezet naar een severitylabel volgens onderstaande drempelwaarden:
+Omdat de managed rulesets binnen de Azure WAF geen native CVSS-severityscore meegeven per event, wordt de ernst van een event bepaald op basis van de beschikbare logdata. Voor events afkomstig van de Microsoft\_BotManagerRuleSet} wordt een vaste severity \textit{Low} toegekend, omdat deze regelset voornamelijk bekende bots detecteert die zelden een kritiek risico vormen. Voor events afkomstig van de OWASP CRS-regelset wordt de severity afgeleid uit de anomaly score, die terug te vinden is in het Message-veld van de AGWFirewallLogs-tabel in het formaat \texttt{Total Score: X}. Deze score wordt omgezet naar een severitylabel volgens onderstaande drempelwaarden:
 
 \begin{table}[H]
     \centering
@@ -122,7 +125,7 @@ Omdat de managed rulesets binnen de Azure WAF geen native CVSS-severityscore mee
     \caption{Drempelwaarden voor severitybepaling op basis van OWASP CRS anomaly score}
 \end{table}
 
-Voor events afkomstig van de \texttt{Security-Error-Alert} wordt de severity bepaald op basis van het aantal herhaalde foutieve responses van hetzelfde IP-adres binnen het gedefinieerde tijdsvenster. Hoe hoger het aantal herhalingen, hoe groter de kans op geautomatiseerd of kwaadaardig gedrag. De drempelwaarden zijn als volgt:
+Voor events afkomstig van de Security-Error-Alert wordt de severity bepaald op basis van het aantal herhaalde foutieve responses van hetzelfde IP-adres binnen het gedefinieerde tijdsvenster. Hoe hoger het aantal herhalingen, hoe groter de kans op geautomatiseerd of kwaadaardig gedrag. De drempelwaarden zijn als volgt:
 
 \begin{table}[H]
     \centering
@@ -157,14 +160,14 @@ daarvan worden deze alerts rechtstreeks vanuit Make doorgestuurd naar de inciden
     \label{fig:make_servicehealth}
 \end{figure}
 
-Het scenario is opgebouwd rond een centrale Router-module die de binnenkomende melding opsplitst op basis van het type Service Health event. Drie paden worden onderscheiden: \texttt{Incident}, \texttt{Maintenance} en \texttt{Informational}.
+Het scenario is opgebouwd rond een centrale Router-module die de binnenkomende melding opsplitst op basis van het type Service Health event. Drie paden worden onderscheiden: \textit{Incident}, \textit{Maintenance} en \textit{Informational}.
 
-Het \texttt{Incident}-pad wordt gevolgd wanneer een actieve verstoring van een Azure-dienst wordt gemeld. Omdat dergelijke incidenten een directe impact kunnen hebben op de beschikbaarheid van de applicatie, wordt automatisch een workitem aangemaakt in Monday.com én een e-mailnotificatie verstuurd via Microsoft 365 Outlook naar de 
+Het \textit{Incident}-pad wordt gevolgd wanneer een actieve verstoring van een Azure-dienst wordt gemeld. Omdat dergelijke incidenten een directe impact kunnen hebben op de beschikbaarheid van de applicatie, wordt automatisch een workitem aangemaakt in Monday.com én een e-mailnotificatie verstuurd via Microsoft 365 Outlook naar de 
 betrokken verantwoordelijken, zodat onmiddellijke opvolging mogelijk is.
 
-Het \texttt{Maintenance}-pad wordt geactiveerd bij geplande onderhoudsmomenten die door Microsoft vooraf worden aangekondigd. In dit geval volstaat het aanmaken van een workitem in Monday.com, zodat de developers tijdig op de hoogte zijn van het geplande onderhoudsvenster en hier rekening mee kunnen houden in hun planning. Een e-mailnotificatie is hier minder urgent en wordt dan ook niet verstuurd.
+Het \textit{Maintenance}-pad wordt geactiveerd bij geplande onderhoudsmomenten die door Microsoft vooraf worden aangekondigd. In dit geval volstaat het aanmaken van een workitem in Monday.com, zodat de developers tijdig op de hoogte zijn van het geplande onderhoudsvenster en hier rekening mee kunnen houden in hun planning. Een e-mailnotificatie is hier minder urgent en wordt dan ook niet verstuurd.
 
-Het \texttt{Informational}-pad vangt alle overige informatieve statusupdates op. Omdat deze meldingen geen directe actie vereisen, worden ze binnen de huidige scope van het proof-of-concept niet verder afgehandeld. Dit pad fungeert als fallback voor events die niet als incident of onderhoud worden geclassificeerd.
+Het \textit{Informational}-pad vangt alle overige informatieve statusupdates op. Omdat deze meldingen geen directe actie vereisen, worden ze binnen de huidige scope van het proof-of-concept niet verder afgehandeld. Dit pad fungeert als fallback voor events die niet als incident of onderhoud worden geclassificeerd.
 
 Deze drieledige opsplitsing zorgt ervoor dat de urgentie van de melding bepalend is voor de mate van opvolging: hoe groter de potentiële impact op de infrastructuur, hoe actiever de notificatie. De volledige afhandeling vindt plaats binnen laag 2, zonder tussenkomst van het centrale platform.
 
@@ -175,14 +178,14 @@ Deze drieledige opsplitsing zorgt ervoor dat de urgentie van de melding bepalend
 \subsection{Opslag en normalisatie via Data Collection Rule}
 Gefilterde events worden vanuit Make doorgestuurd naar Azure Log Analytics via de Logs Ingestion API, gebruikmakend van een Data Collection Endpoint (DCE) en een Data Collection Rule (DCR). De DCE werkt als het eindpunt waarnaar Make de data stuurt, terwijl de DCR bepaalt in welke tabel de data terechtkomt en welke transformaties worden toegepast. Deze aanpak sluit aan bij de aanbevelingen van Microsoft voor moderne Azure-integraties en vervangt de HTTP Data Collector API die inmiddels als verouderd wordt beschouwd.
 
-Omdat de doeltabel \texttt{WAFFilteredEvents\_CL} nog niet bestond in de workspace, werd deze eerst handmatig aangemaakt via de Tables-sectie in de Log Analytics Workspace. Het Analytics-abonnement werd gekozen zodat volledige KQL-querymogelijkheden beschikbaar zijn. Het schema van de tabel omvat de velden \texttt{clientIp}, \texttt{requestUri}, \texttt{ruleId}, \texttt{ruleGroup}, \texttt{action}, \texttt{severity} en \texttt{message}, wat overeenkomt met de relevante velden uit de WAF-firewalllogs.
+Omdat de doeltabel WAFFilteredEvents\_CL nog niet bestond in de workspace, werd deze eerst handmatig aangemaakt via de Tables-sectie in de Log Analytics Workspace. Het Analytics-abonnement werd gekozen zodat volledige KQL-querymogelijkheden beschikbaar zijn. Het schema van de tabel omvat de velden \textit{clientIp}, \textit{requestUri}, \textit{ruleId}, \textit{ruleGroup}, \textit{action}, \textit{severity} en \textit{message}, wat overeenkomt met de relevante velden uit de WAF-firewalllogs.
 
 Voor de authenticatie van Make richting de Logs Ingestion API wordt gebruikgemaakt van een Azure App Registration. Deze registratie levert een client ID, tenant ID en client secret op waarmee Make via OAuth 2.0 een toegangstoken opvraagt bij Microsoft Entra ID (de eerste 2 HTTP modules). Dit token wordt vervolgens meegestuurd bij elk HTTP-verzoek naar het DCE-eindpunt.
 
 %% -----------------------------------
 
 \section{Visualisatie via Azure Monitor Workbooks}
-Om de verzamelde en geanalyseerde data inzichtelijk te maken voor de betrokkenen binnen Devinity, worden Azure Monitor Workbooks ingezet als visualisatielaag, zoals voorzien in het architectuurontwerp. De inzichten zijn gebaseerd op query’s op de tabel \texttt{WAFFilteredEvents\_CL}, waardoor de dashboards uitsluitend geaggregeerde en relevante security-events vanuit Make weergeven in plaats van ruwe logdata.
+Om de verzamelde en geanalyseerde data inzichtelijk te maken voor de betrokkenen binnen Devinity, worden Azure Monitor Workbooks ingezet als visualisatielaag, zoals voorzien in het architectuurontwerp. De inzichten zijn gebaseerd op query’s op de tabel WAFFilteredEvents\_CL, waardoor de dashboards uitsluitend geaggregeerde en relevante security-events vanuit Make weergeven in plaats van ruwe logdata.
 
 Het workbook is opgebouwd rond een operationeel security-overzicht dat het aantal WAF-events over een instelbare tijdsperiode visualiseert, inclusief trendanalyse in de tijd. Daarnaast worden de meest actieve bron-IP-adressen en de frequentie van blokkeringen weergegeven om aanvallende bronnen te identificeren. Een bijkomend onderdeel focust op de meest voorkomende rule groups, waardoor dominante aanvalspatronen snel zichtbaar worden. Tot slot wordt de spreiding van blokkeringen gevisualiseerd op basis van tijd om piekmomenten in het verkeer en mogelijke aanvalsgolven te detecteren.
 
@@ -191,28 +194,28 @@ Het workbook is opgebouwd rond een operationeel security-overzicht dat het aanta
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{workbook_1.png}
-    \caption{Operationeel dashboard in Azure Monitor Workbooks op basis van de gefilterde \texttt{WAFFilteredEvents\_CL}-tabel}
+    \caption{Operationeel dashboard in Azure Monitor Workbooks op basis van de gefilterde \textit{WAFFilteredEvents\_CL}-tabel}
     \label{fig:workbook_1}
 \end{figure}
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{workbook_2.png}
-    \caption{Operationeel dashboard in Azure Monitor Workbooks op basis van de gefilterde \texttt{WAFFilteredEvents\_CL}-tabel}
+    \caption{Operationeel dashboard in Azure Monitor Workbooks op basis van de gefilterde \textit{WAFFilteredEvents\_CL}-tabel}
     \label{fig:workbook_2}
 \end{figure}
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.5\textwidth]{workbook_3.png}
-    \caption{Operationeel dashboard in Azure Monitor Workbooks op basis van de gefilterde \texttt{WAFFilteredEvents\_CL}-tabel}
+    \caption{Operationeel dashboard in Azure Monitor Workbooks op basis van de gefilterde \textit{WAFFilteredEvents\_CL}-tabel}
     \label{fig:workbook_3}
 \end{figure}
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{workbook_4.png}
-    \caption{Operationeel dashboard in Azure Monitor Workbooks op basis van de gefilterde \texttt{WAFFilteredEvents\_CL}-tabel}
+    \caption{Operationeel dashboard in Azure Monitor Workbooks op basis van de gefilterde \textit{WAFFilteredEvents\_CL}-tabel}
     \label{fig:workbook_4}
 \end{figure}
 
@@ -255,7 +258,6 @@ Een verdere uitbreiding is het automatisch blokkeren van IP-adressen die herhaal
 Een andere mogelijke uitbreiding is het automatisch genereren van een wekelijks securityrapport via een geplande trigger in Make, waarbij de resultaten als HTML-tabel worden doorgestuurd via Outlook of PDF. Omdat dit extra credits verbruikt, werd dit niet geïmplementeerd. Voor manuele rapportering volstaat de printfunctie van de browser op het Workbook met een tijdsvenster van zeven dagen. Daarnaast vermindert de huidige aanpak, waarbij high en critical events onmiddellijk worden gemeld via mail en Monday.com, de nood aan periodieke rapportering aanzienlijk, omdat betrokkenen al in real-time op de hoogte worden gebracht.
 
 De volledige opzet is erg modulair opgebouwd, waardoor bijkomende detectieregels, queries en automatisaties relatief eenvoudig kunnen worden toegevoegd zonder grote wijzigingen aan de bestaande architectuur. Dit biedt ruimte voor verdere uitbreiding richting meer geavanceerde detectiemechanismen en integraties. Binnen deze proof-of-concept zijn echter enkel de meest relevante en illustratieve uitbreidingen uitgewerkt, aangezien de focus ligt op het aantonen van de haalbaarheid en niet op een volledige uitwerking van alle mogelijke use cases.
-
 
 \section{Conclusie}
 Het proof-of-concept toont aan dat de principes uit het architectuurontwerp effectief kunnen worden omgezet naar een werkend systeem. De combinatie van Azure Log Analytics voor centrale opslag en analyse, Make voor ingestie, filtering en incident response, en Azure Monitor Workbooks voor visualisatie biedt een samenhangende oplossing die aansluit bij de noden en de bestaande infrastructuur van Devinity. De implementatie beperkt zich bewust tot de Azure WAF als databron en maakt gebruik van gesimuleerde testdata, maar de opzet is generiek genoeg om in een volgende fase uitgebreid te worden met bijkomende bronnen zoals New Relic-alerts of meldingen vanuit Microsoft 365 Defender, zonder aanpassingen aan het centrale platform of de incident response component. In het volgende hoofdstuk worden de resultaten van het proof-of-concept geëvalueerd aan de hand van de vooraf gedefinieerde doelstellingen en KPI's.

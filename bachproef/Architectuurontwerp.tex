@@ -6,6 +6,8 @@ Op basis van de probleemanalyse wordt in deze fase een concrete architectuur uit
 
 Het voorgestelde ontwerp vertrekt vanuit de kernprincipes van SIEM-systemen, namelijk normalisatie, eventcorrelatie en rapportering. Tegelijk blijft het bewust binnen de scope van een proof-of-concept: het doel is niet om een volledig SIEM-platform te bouwen, maar om deze principes toe te passen binnen een haalbare en afgebakende context die aansluit bij de bestaande infrastructuur van Devinity. Omwille van technische haalbaarheid wordt de implementatie daarbij voornamelijk uitgewerkt rond de Azure Web Application Firewall als databron, wat verder wordt toegelicht in de bespreking van de afzonderlijke lagen.
 
+\newpage
+
 %% -----------------------------------
 
 \section{Architectuuroverzicht}
@@ -113,12 +115,15 @@ De effectiviteit van het systeem kan in een latere fase worden geëvalueerd aan 
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth]{architectuurontwerp_diagram.png}
-    \caption[Ontwerp van de gelaagde architectuur met lineaire datastroom en gescheiden componenten}
+    \includegraphics[width=0.8\textwidth]{architectuurontwerp_diagram.png}
+    \caption[Ontwerp van de gelaagde architectuur met lineaire datastroom en gescheiden componenten]{\label{fig:Architectuurontwerp}
+    Schematische voorstelling van de architectuurontwerp met verschillende lagen gebaseerd op de noden uit de probleemanalyse.}
 \end{figure}
 
 
 %% -----------------------------------
+
+\newpage
 
 \section{Conclusie}
 De voorgestelde architectuur biedt een gestructureerde en haalbare oplossing voor de uitdagingen die in de probleemanalyse werden geïdentificeerd. Door te werken met drie duidelijk gescheiden lagen en een aparte incident response component wordt de versnippering van data aangepakt en wordt een basis gelegd voor een meer proactieve aanpak van security monitoring.
