@@ -26,98 +26,35 @@
 %% Maak voor elke fase (behalve het literatuuronderzoek) een NIEUW HOOFDSTUK aan
 %% en geef het een gepaste titel.
 
-Het onderzoek wordt uitgevoerd in vier fasen, die samen een gestructureerd en iteratief 
-plan van aanpak vormen. Elke fase draagt bij aan het ontwikkelen en evalueren van een 
-proof-of-concept voor security monitoring en incident response binnen een SaaS- en 
-DevOps-context. De fasen bouwen bewust op elkaar voort: de probleemanalyse stuurt het 
-architectuurontwerp, het ontwerp vormt de basis voor de implementatie, en de evaluatie 
-toetst het geheel aan de vooropgestelde doelstellingen en deelvragen.
+Het onderzoek wordt uitgevoerd in vier fasen, die samen een gestructureerd en iteratief plan van aanpak vormen. Elke fase draagt bij aan het ontwikkelen en evalueren van een proof-of-concept voor security monitoring en incident response binnen een SaaS- en DevOps-context. De fasen bouwen bewust op elkaar voort: de probleemanalyse stuurt het architectuurontwerp, het ontwerp vormt de basis voor de implementatie, en de evaluatie toetst het geheel aan de vooropgestelde doelstellingen en deelvragen.
 
 \section{Fase 1: Probleemanalyse}
-In de eerste fase wordt in samenwerking met Devinity de huidige situatie onderzocht. 
-De bestaande monitoringtools, werkwijzen en knelpunten worden in kaart gebracht via 
-observaties, gesprekken met collega's en een eerste verkenning van beschikbare logs en 
-systemen. Ook worden bestaande incidenten en de manier waarop deze momenteel worden 
-opgevolgd geanalyseerd.
+In de eerste fase wordt in samenwerking met Devinity de huidige situatie grondig onderzocht. De bestaande monitoringtools, werkwijzen en knelpunten worden in kaart gebracht via observaties, gesprekken met collega's en een eerste verkenning van beschikbare logs en systemen. Ook worden bestaande incidenten en de manier waarop deze momenteel worden opgevolgd geanalyseerd. Die analyse is niet louter beschrijvend: het doel is een scherp en onderbouwd beeld te krijgen van waar de grootste pijnpunten zich bevinden, zodat het architectuurontwerp in de volgende fase daar gericht op kan inspelen.
 
-Deze fase geeft een antwoord op de probleemgerichte deelvragen. Meer bepaald wordt 
-onderzocht welke uitdagingen Devinity ervaart bij het gebruik van meerdere tools voor 
-security monitoring (deelvraag P1), hoe incidenten momenteel worden gedetecteerd en 
-gerapporteerd en welke tekortkomingen daarin bestaan op vlak van snelheid, correlatie 
-en consistentie (deelvraag P2), welke securitydata beschikbaar is vanuit de bestaande 
-systemen en hoe deze momenteel worden gecentraliseerd (deelvraag P3), welke metrics 
-en KPI's vandaag worden gebruikt en waar deze tekortschieten (deelvraag P4), en hoe 
-de huidige aanpak de operationele efficiëntie en het risicomanagement beïnvloedt 
-(deelvraag P5).
+Meer bepaald wordt onderzocht welke uitdagingen Devinity ervaart bij het gebruik van meerdere tools voor security monitoring (deelvraag P1), hoe incidenten momenteel worden gedetecteerd en gerapporteerd en welke tekortkomingen daarin bestaan op vlak van snelheid, correlatie en consistentie (deelvraag P2), welke securitydata beschikbaar is vanuit de bestaande systemen en hoe deze momenteel worden gecentraliseerd (deelvraag P3), welke metrics en KPI's vandaag worden gebruikt en waar deze tekortschieten (deelvraag P4), en hoe de huidige aanpak de operationele efficiëntie en het risicomanagement beïnvloedt (deelvraag P5).
 
-Het resultaat van deze fase is een gedetailleerde probleemstelling die de basis vormt 
-voor het architectuurontwerp. Hierbij wordt ook expliciet rekening gehouden met de 
-niet-disruptieve doelstelling: de analyse brengt niet alleen tekortkomingen in kaart, 
-maar ook welke bestaande tools en werkwijzen behouden en verder benut kunnen worden.
+Het resultaat van deze fase is een gedetailleerde probleemstelling die de basis vormt voor het architectuurontwerp. Hierbij wordt ook expliciet rekening gehouden met de niet-disruptieve doelstelling: de analyse brengt niet alleen tekortkomingen in kaart, maar ook welke bestaande tools en werkwijzen behouden en verder benut kunnen worden.
 
 \section{Fase 2: Architectuurontwerp}
-Op basis van de probleemanalyse wordt een architectuur ontworpen voor de centrale 
-verzameling en verwerking van securitydata. Verschillende technologieën worden 
-afgewogen en geselecteerd, en de datastromen worden gedefinieerd via pipelines zoals 
-API-polling, webhooks en logforwarders. De architectuur bouwt voort op de 
-kernprincipes van SIEM-systemen, namelijk logaggregatie, normalisatie, eventcorrelatie 
-en rapportering, en houdt rekening met de NIST-richtlijnen voor intrusion detection en 
-prevention~\autocite{Scarfone_Mell_2007}.
+Op basis van de probleemanalyse wordt een architectuur ontworpen voor de centrale verzameling en verwerking van securitydata. Verschillende technologieën worden afgewogen en geselecteerd op basis van hun aansluiting bij de bestaande infrastructuur van Devinity, hun schaalbaarheid en de mate waarin ze integreerbaar zijn zonder grote aanpassingen aan de bestaande werking. De datastromen worden gedefinieerd via pipelines zoals API-polling, webhooks en logforwarders, en voor elke keuze wordt expliciet verantwoord waarom die boven alternatieven de voorkeur krijgt. De architectuur bouwt voort op de kernprincipes van SIEM-systemen, namelijk logaggregatie, normalisatie, eventcorrelatie en rapportering, en houdt rekening met de NIST-richtlijnen voor intrusion detection en prevention~\autocite{Scarfone_Mell_2007}.
 
-Deze fase beantwoordt de oplossingsgerichte deelvragen over architectuur en technologie. 
-Concreet wordt bepaald welke architectuur en technologieën het meest geschikt zijn voor 
-een geautomatiseerd securitymonitoringsysteem binnen een DevOps-omgeving (deelvraag O1), 
-welke data-integratieprocessen het meest efficiënt zijn om logs en securitydata te 
-verzamelen en te normaliseren (deelvraag O3), en hoe de beveiliging en betrouwbaarheid 
-van het systeem zelf kunnen worden gegarandeerd binnen de bestaande pipeline (deelvraag 
-O6). Ook wordt in deze fase al nagedacht over de KPI's die later in de evaluatiefase 
-zullen worden gebruikt (deelvraag O5).
+Concreet wordt in deze fase bepaald welke architectuur en technologieën het meest geschikt zijn voor een geautomatiseerd securitymonitoringsysteem binnen een DevOps-omgeving (deelvraag O1), welke data-integratieprocessen het meest efficiënt zijn om logs en securitydata te verzamelen en te normaliseren (deelvraag O3), en hoe de beveiliging en betrouwbaarheid van het systeem zelf kunnen worden gegarandeerd binnen de bestaande pipeline (deelvraag O6). Ook wordt in deze fase al nagedacht over de KPI's die later in de evaluatiefase zullen worden gebruikt (deelvraag O5).
 
-Een belangrijke randvoorwaarde in dit ontwerp is dat de oplossing zo weinig mogelijk 
-ingrijpt op de bestaande infrastructuur. Ontwerpkeuzes worden daarom bewust afgestemd 
-op de tools en werkwijzen die al aanwezig zijn binnen Devinity, zoals Make voor 
-automatisatie en Azure voor infrastructuur en beveiliging. Het resultaat van deze fase 
-is een gedocumenteerd systeemontwerp met een beschrijving van de gekozen architectuur, 
-de databronnen, de ingestiepipeline en het centrale analyseplatform.
+Een belangrijke randvoorwaarde in dit ontwerp is dat de oplossing zo weinig mogelijk ingrijpt op de bestaande infrastructuur. Ontwerpkeuzes worden daarom bewust afgestemd op de tools en werkwijzen die al aanwezig zijn binnen Devinity, zoals Make voor automatisatie en Azure voor infrastructuur en beveiliging. Het resultaat van deze fase is een gedocumenteerd systeemontwerp met een beschrijving van de gekozen architectuur, de databronnen, de ingestiepipeline en het centrale analyseplatform.
 
 \section{Fase 3: Proof-of-concept ontwikkeling}
-In deze fase wordt het ontwerp omgezet naar een werkend prototype binnen de 
-geselecteerde omgeving. Kernfuncties zoals logverzameling, regelgebaseerde detectie, 
-eenvoudige anomaly-detectie en automatische rapportage worden stap voor stap 
-geïmplementeerd en getest. Testen worden uitgevoerd met gesimuleerde data en 
-ongevoelige logdata uit testomgevingen, bestaande uit authenticatielogs, auditlogs, 
-API-events en doelbewust gegenereerde security-events zoals mislukte logins, om 
-realistische scenario's te kunnen simuleren.
+In deze fase wordt het ontwerp omgezet naar een werkend prototype binnen de geselecteerde omgeving. Kernfuncties zoals logverzameling, regelgebaseerde detectie, eenvoudige anomaly-detectie en automatische rapportage worden stap voor stap geïmplementeerd en getest. Die iteratieve aanpak laat toe om tussentijds bij te sturen wanneer bepaalde ontwerpkeuzes in de praktijk anders uitpakken dan verwacht.
 
-Deze fase geeft een concreet antwoord op de meer technische oplossingsgerichte 
-deelvragen. Zo wordt uitgewerkt hoe eenvoudige anomaly-detectie op login-auditlogs, 
-als aanvulling op regelgebaseerde detectie, kan bijdragen aan het identificeren van 
-ongebruikelijke authenticatiepogingen (deelvraag O2), en hoe automatische 
-rapportgeneratie kan worden geïmplementeerd zodat rapporten zowel technische details 
-als managementinzichten bevatten (deelvraag O4). Tegelijk wordt in de praktijk getoetst 
-of de gekozen data-integratieprocessen effectief werken zoals voorzien in het ontwerp 
-(deelvraag O3).
+Testen worden uitgevoerd met gesimuleerde data en ongevoelige logdata uit testomgevingen, bestaande uit authenticatielogs, auditlogs, API-events en doelbewust gegenereerde security-events zoals mislukte logins, om realistische scenario's te kunnen simuleren zonder productiedata te gebruiken of de live omgeving te verstoren. Zo wordt uitgewerkt hoe rule-based detectie op afwijkende HTTP-statuscodes in de AGWAccessLogs zoals herhaalde 401- en 403-responses, als aanvulling op regelgebaseerde detectie, kan bijdragen aan het identificeren van mogelijk ongeautoriseerde toegangspogingen (deelvraag O2), en hoe automatische rapportgeneratie kan worden geïmplementeerd zodat rapporten zowel technische details als managementinzichten bevatten (deelvraag O4). Tegelijk wordt in de praktijk getoetst of de gekozen data-integratieprocessen effectief werken zoals voorzien in het ontwerp (deelvraag O3).
 
-Het resultaat van deze fase is een werkend proof-of-concept dat de centralisatie, 
-analyse en rapportage van securitydata aantoont binnen de omgeving van Devinity.
+Het resultaat van deze fase is een werkend proof-of-concept dat de centralisatie, analyse en rapportage van securitydata aantoont binnen de omgeving van Devinity.
 
 \section{Fase 4: Evaluatie}
-In de laatste fase worden de prestaties van het proof-of-concept geëvalueerd aan de 
-hand van vooraf gedefinieerde KPI's, zoals detectiesnelheid, responstijd en de 
-verhouding tussen relevante en irrelevante meldingen. Deze evaluatie maakt het mogelijk 
-om de effectiviteit van het systeem objectief te beoordelen en gerichte aanbevelingen 
-voor optimalisatie op te stellen.
+In de laatste fase worden de prestaties van het proof-of-concept geëvalueerd aan de hand van vooraf gedefinieerde KPI's, zoals detectiesnelheid, responstijd en de verhouding tussen relevante en irrelevante meldingen. Die KPI's werden niet ad hoc vastgelegd, maar bewust gekozen op basis van de tekortkomingen die in de probleemanalyse naar voren kwamen, zodat de evaluatie een directe vergelijking mogelijk maakt tussen de oude en de nieuwe situatie. De metingen worden uitgevoerd over meerdere testrondes om toevallige uitschieters te minimaliseren en een betrouwbaar beeld te geven van de gemiddelde en maximale prestaties van het systeem.
 
-Deze fase sluit de cirkel met de probleemgerichte deelvragen door na te gaan in welke 
-mate de geïmplementeerde oplossing de eerder vastgestelde tekortkomingen effectief 
-aanpakt. Zo wordt getoetst of incidenten sneller en consistenter worden gedetecteerd 
-(deelvraag P2), of de gecentraliseerde aanpak zorgt voor een beter overzicht van 
-securitydata (deelvraag P3), en of de gedefinieerde KPI's een objectieve meting van 
-de effectiviteit mogelijk maken (deelvraag P4 en O5). Ook wordt beoordeeld of de oplossing de operationele efficiëntie verbetert ten opzichte van de huidige situatie 
-(deelvraag P5).
+Deze fase sluit de cirkel met de probleemgerichte deelvragen door na te gaan in welke mate de geïmplementeerde oplossing de eerder vastgestelde tekortkomingen effectief aanpakt. Zo wordt getoetst of incidenten sneller en consistenter worden gedetecteerd (deelvraag P2), of de gecentraliseerde aanpak zorgt voor een beter overzicht van securitydata (deelvraag P3), en of de gedefinieerde KPI's een objectieve meting van de effectiviteit mogelijk maken (deelvraag P4 en O5). Ook wordt beoordeeld of de oplossing de operationele efficiëntie verbetert ten opzichte van de huidige situatie (deelvraag P5).
 
-Het resultaat van deze fase is een evaluatierapport met conclusies en aanbevelingen 
-voor verdere uitbouw van het systeem binnen de infrastructuur van Devinity.
+Het resultaat van deze fase is een evaluatierapport met conclusies en aanbevelingen voor verdere uitbouw van het systeem binnen de infrastructuur van Devinity.
 
 \begin{figure}[H]
     \centering
@@ -126,8 +63,4 @@ voor verdere uitbouw van het systeem binnen de infrastructuur van Devinity.
         Schematisch overzicht van de vierfasen-methodologie van dit onderzoek.}
 \end{figure}
 
-De aanpak bouwt voort op de NIST-aanbevelingen voor intrusion detection en prevention 
-systemen~\autocite{Scarfone_Mell_2007}, waarin het vastleggen en analyseren van 
-security-events centraal staat voor effectieve detectie en respons. Tegelijkertijd 
-baseert de architectuurkeuze zich op kerncomponenten van SIEM-systemen, zoals 
-gecentraliseerde logverzameling, normalisatie en event-monitoring~\autocite{s21144759}.
+De aanpak bouwt voort op de NIST-aanbevelingen voor intrusion detection en prevention systemen~\autocite{Scarfone_Mell_2007}, waarin het vastleggen en analyseren van security-events centraal staat voor effectieve detectie en respons. Tegelijkertijd baseert de architectuurkeuze zich op kerncomponenten van SIEM-systemen, zoals gecentraliseerde logverzameling, normalisatie en event-monitoring~\autocite{s21144759}.

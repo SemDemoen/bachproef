@@ -10,9 +10,7 @@ Daarvoor worden drie KPI's gebruikt die rechtstreeks gekoppeld zijn aan de probl
 %% -----------------------------------
 
 \section{Evaluatie per KPI}
-
 \subsection{KPI 1: Detectiesnelheid}
-
 Vroeger was er binnen Devinity geen actief mechanisme dat WAF-blokkeringen oppikte en daar automatisch iets mee deed. Events belandden in de Azure-portal, in Microsoft 365 Defender of in monday.com, maar of iemand dat ook daadwerkelijk zag, hing volledig af van wanneer die persoon toevallig in het juiste systeem keek. Dat is geen betrouwbare manier van werken.
 
 Het proof-of-concept lost dit op met een Alert Rule in Azure Monitor die elke vijf minuten de \texttt{AGWFirewallLogs}-tabel bevraagt via KQL. Zodra er minstens één geblokkeerd event is, stuurt de gekoppelde Action Group een webhook naar Make. Een tweede regel, \texttt{Security-Error-Alert}, doet hetzelfde voor afwijkende HTTP-statuscodes op de \texttt{AGWAccessLogs}-tabel, maar triggert pas wanneer een combinatie van IP-adres en statuscode minstens twintig keer voorkomt binnen hetzelfde tijdsvenster.
@@ -94,7 +92,6 @@ Het tijdsvenster van vijf minuten werd in deze proof-of-concept bewust gekozen v
 %% -----------------------------------
 
 \subsection{KPI 2: Responstijd}
-
 Detectie alleen volstaat niet: even belangrijk is hoe snel er nadien actie wordt ondernomen. Vroeger was dat traject lang en onvoorspelbaar. Meldingen kwamen binnen via e-mail of monday.com, maar er was geen onderscheid op basis van de ernst van een event. Een kritische WAF-blokkering werd niet anders behandeld dan een generieke systeemfout, en hoe snel iemand reageerde hing af van wanneer die persoon toevallig zijn e-mail of monday.com-bord bekeek.
 
 Het systeem koppelt de respons rechtstreeks aan de severity die Make aan elk event toekent, waardoor de aanpak proportioneel blijft aan de ernst van de situatie. Alle events worden doorgestuurd naar Azure Log Analytics via de Logs Ingestion API en zijn vervolgens raadpleegbaar in het workbook, dat een centraal overzicht biedt van alle geregistreerde activiteit.
@@ -189,9 +186,7 @@ Wat meteen opvalt in de grafiek is dat de wachttijd tussen de Alert Rule-trigger
 %% -----------------------------------
 
 \subsection{KPI 3: Verhouding relevante versus irrelevante meldingen}
-
-%TODO - Security infra mails verwerken & deze tekst aanpassen
-Een van de concrete klachten uit de probleemanalyse was dat de e-mailmeldingen vanuit Microsoft 365 Defender nauwelijks werden gelezen. De scope was te breed en de meldingen te generiek om er direct iets mee te doen. Dat probleem is niet uniek voor Devinity. \autocite{10.1145/3723158} stelt dat een te hoog volume aan niet-actiegerichte meldingen leidt tot alert fatigue, waarbij analisten meldingen steeds vaker negeren of volledig afhaken.
+Een van de concrete klachten uit de probleemanalyse was dat de e-mailmeldingen nauwelijks werden gelezen. De scope was te breed en de meldingen te generiek om er direct iets mee te doen. Dat probleem is niet uniek voor Devinity. \autocite{10.1145/3723158} stelt dat een te hoog volume aan niet-actiegerichte meldingen leidt tot alert fatigue, waarbij analisten meldingen steeds vaker negeren of volledig afhaken.
 
 Het proof-of-concept filtert in twee stappen. Eerst zorgen de KQL-queries in de Alert Rules zelf al voor een selectie: de \texttt{Security-FirewallLog-Alert} kijkt enkel naar geblokkeerde WAF-events, de \texttt{Security-Error-Alert} triggert pas bij twintig of meer occurrences van dezelfde IP-statuscodecombo binnen vijf minuten. Events die die drempel niet halen, genereren nooit een webhook. Daarna filtert de eerste Router-module in Make opnieuw: payloads die niet overeenkomen met een van de twee bekende alert types worden genegeerd en doorlopen het scenario niet verder.
 
@@ -212,7 +207,7 @@ De filterefficiëntie werd over vijf testrondes bijgehouden door het totale aant
         Ronde 4 & 876  & 15 & 2 & 1 & 861  & 98,3\% \\
         Ronde 5 & 719  & 10 & 1 & 0 & 709  & 98,6\% \\
         \midrule
-        \textbf{Totaal} & \textbf{3,857} & \textbf{59} & \textbf{8} & \textbf{2} & \textbf{3,798} & \textbf{98,5\%} \\
+        Totaal & 3,857 & 59 & 8 & 2 & 3,798 & \textbf{98,5\%} \\
         \bottomrule
     \end{tabular}
 \end{table}
@@ -224,7 +219,7 @@ De filterefficiëntie werd over vijf testrondes bijgehouden door het totale aant
             ybar stacked,
             width=\textwidth,
             height=7cm,
-            bar width=0.9cm,
+            bar width=0.7cm,
             symbolic x coords={Ronde 1, Ronde 2, Ronde 3, Ronde 4, Ronde 5},
             xtick=data,
             xlabel={Testronde},
@@ -278,17 +273,18 @@ Over alle vijf rondes samen werden 3,857 ruwe events geregistreerd, waarvan er s
 %% -----------------------------------
 
 \section{Koppeling aan de deelvragen}
-
-\subsection{P2: Snellere en consistentere detectie}
+\paragraph{P2: Snellere en consistentere detectie}
 De probleemanalyse maakte duidelijk dat detectie niet systematisch verliep. Het systeem detecteert nu elk event via een geautomatiseerde cyclus van vijf minuten die altijd draait, ongeacht het tijdstip of wie er aanwezig is. Alle geblokkeerde WAF-events en afwijkende statuscodepatronen boven de drempelwaarde worden op dezelfde manier verwerkt. De gemiddelde detectietijd van 187 seconden, met een maximum van 298 seconden, toont aan dat de consistentie nu technisch gegarandeerd is in plaats van afhankelijk van menselijke alertheid.
 
-\subsection{P3: Beter overzicht via centralisatie}
+\paragraph{P3: Beter overzicht via centralisatie}
 Logs en meldingen zaten verspreid over meerdere systemen zonder onderlinge koppeling, waardoor een volledig beeld krijgen van wat er aan de hand was tijdrovend en foutgevoelig was. Het systeem brengt alle gefilterde security-events samen in één centrale tabel in Azure Log Analytics via de Logs Ingestion API. Die integratie normaliseert de binnenkomende data naar een vast schema, zodat events uit verschillende bronnen op een uniforme manier opgeslagen en bevraagd kunnen worden. Bovenop die opslag biedt het Azure Monitor Workbook een overzicht van de WAF-activiteit: het totaal aantal geblokkeerde events, de meest actieve bron-IP-adressen, de dominante rule groups en de spreiding van blokkeringen in de tijd. Dat is informatie die vroeger enkel beschikbaar was door zelf meerdere tools langs te gaan en data manueel samen te brengen.
 
-\subsection{P4 en O5: Objectieve meting via KPI's}
+Het Service Health scenario sluit aan bij dezelfde redenering: door die alerts bewust buiten het centrale platform te houden en rechtstreeks door te sturen naar incident response, blijft de tabel \texttt{WAFFilteredEvents_CL} vrij van operationele ruis. De scheiding tussen securityrelevante data en operationele statusmeldingen is daarmee niet alleen een architectuurkeuze, maar ook aantoonbaar effectief in de praktijk.
+
+\paragraph{P4 en O5: Objectieve meting via KPI's}
 Er waren voordien geen meetpunten om te beoordelen of de security monitoring effectief werkte. De drie KPI's in dit hoofdstuk vullen dat gat in. De detectiecyclus van vijf minuten staat vast in de Alert Rule-configuratie, de responstijd is afleidbaar uit de tijdstempels in Log Analytics en monday.com, en de filterlogica in de KQL-queries en de Make Router-module bepaalt aantoonbaar welke events wel of niet verder gaan. De meetresultaten in Tabellen~\ref{tab:detectiesnelheid}, \ref{tab:responstijd} en~\ref{tab:filterratio} maken het voor het eerst mogelijk om concrete uitspraken te doen over hoe het systeem presteert en hoe dat in de tijd evolueert.
 
-\subsection{P5: Operationele efficiëntie ten opzichte van de huidige situatie}
+\paragraph{P5: Operationele efficiëntie ten opzichte van de huidige situatie}
 Vroeger moesten analisten zelf tussen systemen schakelen om een volledig beeld van een incident te krijgen en zelf verbanden leggen tussen events die in verschillende tools stonden. Van detectie over filtering en normalisatie tot het aanmaken van workitems en het sturen van notificaties loopt nu de volledige keten automatisch. Een analist krijgt een workitem aangeleverd met de relevante context en heeft via het workbook toegang tot een geaggregeerd overzicht. De tijdwinst zit niet alleen in de snellere detectie en respons, maar ook in de tijd die niet meer besteed hoeft te worden aan het manueel verzamelen van informatie.
 
 Daarnaast genereert het systeem via het workbook en de automatische notificaties een vorm van rapportage die zowel details als een breder overzicht combineert. Technische informatie zoals bron-IP-adressen en rule groups is beschikbaar voor belanghebbenden, terwijl het workbook ook een overzicht op hoger niveau biedt dat bruikbaar is voor rapportering aan management. Tot slot is de betrouwbaarheid van het systeem zelf een relevant aandachtspunt. De huidige opzet is afhankelijk van de beschikbaarheid van Make, Azure Log Analytics en de Logs Ingestion API. Een uitval van één van die componenten onderbreekt de volledige detectie- en notificatieketen. In een productieomgeving verdient het dan ook aanbeveling om monitoring op het systeem zelf in te stellen, zodat een eventuele onderbreking tijdig opgemerkt wordt.
